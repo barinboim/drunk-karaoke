@@ -3,10 +3,12 @@ import fs from 'node:fs';
 import {buildCorpus,splitRecords,detectMode,analyzeWord,normalize,parseAccents,withAccents} from '../dist/engine.js';
 const file=process.argv[2]||'dist/data/menu.txt';
 const text=fs.readFileSync(new URL('../'+file,import.meta.url),'utf8');
-const accentsFile=new URL('../dist/data/accents.txt',import.meta.url);
+const read=where=>fs.existsSync(where)?fs.readFileSync(where,'utf8'):'';
+// Общие ударения плюс файл этого датасета: accents-<имя>.txt рядом с ним.
+const own=new URL(`../${file}`.replace(/([^/]+)\.txt$/,'accents-$1.txt'),import.meta.url);
 const dictionary=withAccents(
   new Map(Object.entries(JSON.parse(fs.readFileSync(new URL('../dist/data/dictionary.json',import.meta.url),'utf8')))),
-  parseAccents(fs.existsSync(accentsFile)?fs.readFileSync(accentsFile,'utf8'):''));
+  parseAccents(read(new URL('../dist/data/accents.txt',import.meta.url))+'\n'+read(own)));
 const mode=detectMode(text),records=splitRecords(text,mode);
 const unknown=new Map();
 for(const record of records)

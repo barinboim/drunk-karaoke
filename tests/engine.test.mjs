@@ -7,7 +7,8 @@ import {parseUltraStar} from '../dist/ultrastar.js';
 const at=name=>new URL(`../dist/data/${name}`,import.meta.url);
 const dictionary=new Map(Object.entries(JSON.parse(fs.readFileSync(at('dictionary.json'),'utf8'))));
 const menu=fs.readFileSync(at('menu.txt'),'utf8');
-const river=fs.readFileSync(at('river.txt'),'utf8');
+// Своя проза для проверки клауз: корпусов-прозы в поставке нет, а режим есть.
+const PROSE='Вечер тихий, и ветер уже улёгся. Мы сидим у воды, молчим и ждём, пока дым уйдёт за реку. Ничего не случилось, просто стало поздно.';
 
 // A compact chart standing in for a real song: two verse shapes plus a chorus sung three times.
 const CHART=[
@@ -56,10 +57,12 @@ test('the menu corpus is a list of whole records grouped into sections', () => {
 });
 
 test('prose is cut at punctuation, never mid-thought', () => {
-  assert.equal(detectMode(river),'prose');
-  for(const record of splitRecords(river,'prose')){
+  assert.equal(detectMode(PROSE),'prose');
+  const records=splitRecords(PROSE,'prose');
+  assert.ok(records.length>3);
+  for(const record of records){
     assert.equal(record.text,record.text.trim());
-    assert.ok(river.slice(record.start,record.end)===record.text);
+    assert.equal(PROSE.slice(record.start,record.end),record.text);
     assert.ok(!/^[,.;:!?…]/.test(record.text));
   }
 });

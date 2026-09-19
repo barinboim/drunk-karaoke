@@ -11,12 +11,11 @@ const CORPORA={
   pills:{file:'data/pills.txt',name:'Инструкция к лекарству'},
   ads:{file:'data/ads.txt',name:'Доска объявлений'},
   menu:{file:'data/menu.txt',name:'Меню ресторанов'},
-  river:{file:'data/river.txt',name:'Идущий к реке'},
 };
 
 let library=[],filtered=[],page=0;
 let entry=null,song=null,version=[],stats=null;
-let corpusText='',corpusName='',corpusKey='ali';
+let corpusText='',corpusName='',corpusKey='ali',accentsUrl='';
 let seed=Number(localStorage.getItem('dk.seed'))||crypto.getRandomValues(new Uint32Array(1))[0];
 let offset=Number(localStorage.getItem('dk.offset'))||0;
 let showNext=localStorage.getItem('dk.next')!=='0';
@@ -27,7 +26,7 @@ let lastView='',audioObjectURL=null;
 const worker=new Worker('worker.js',{type:'module'}),pending=new Map();let requestId=0;
 worker.onmessage=({data})=>{const job=pending.get(data.id);if(!job)return;pending.delete(data.id);data.error?job.reject(Error(data.error)):job.resolve(data);};
 worker.onerror=()=>{for(const job of pending.values())job.reject(Error('Не удалось запустить локальный подбор текста.'));pending.clear();};
-const compute=payload=>new Promise((resolve,reject)=>{const id=++requestId;pending.set(id,{resolve,reject});worker.postMessage({...payload,id});});
+const compute=payload=>new Promise((resolve,reject)=>{const id=++requestId;pending.set(id,{resolve,reject});worker.postMessage({accents:accentsUrl,...payload,id});});
 
 /* ---------- small helpers ---------- */
 const clock=()=>$('clock').textContent=new Date().toLocaleTimeString('ru',{hour:'2-digit',minute:'2-digit'});
@@ -158,7 +157,7 @@ async function openSong(item,mode='live'){
     const chart=await read(item.chart);
     const next=parseUltraStar(chart);
     if(!corpusText)await loadCorpus(corpusKey);
-    const done=await reroll(crypto.getRandomValues(new Uint32Array(1))[0],{song:next,text:corpusText,mode:corpusKey==='river'?'prose':undefined});
+    const done=await reroll(crypto.getRandomValues(new Uint32Array(1))[0],{song:next,text:corpusText,mode:undefined});
     if(!done)return;
     entry=item;song=next;vocalOn=false;stopHear();shuffleBackdrops();$('corpus').value=corpusKey;studio.open(mode,micId);
     if(audioObjectURL){URL.revokeObjectURL(audioObjectURL);audioObjectURL=null;}
@@ -171,12 +170,13 @@ async function openSong(item,mode='live'){
   finally{busy(false);applyFilter();}
 }
 async function loadCorpus(key){
-  if(CORPORA[key].plain){corpusName=CORPORA[key].name;corpusKey=key;corpusText='';return;}
+  if(CORPORA[key].plain){corpusName=CORPORA[key].name;corpusKey=key;corpusText='';accentsUrl='';return;}
   // На опубликованной версии часть корпусов может отсутствовать — говорим об этом прямо.
   let text;
   try{text=await read(CORPORA[key].file);}
   catch{throw Error(`Корпус «${CORPORA[key].name}» есть только в локальной версии. Выбери другой или загрузи свой .txt.`);}
   corpusName=CORPORA[key].name;corpusKey=key;corpusText=text;
+  accentsUrl=CORPORA[key].file.replace(/([^/]+)\.txt$/,'accents-$1.txt');
 }
 async function reroll(nextSeed,payload={}){
   busy(true);
@@ -407,7 +407,7 @@ $('corpus').addEventListener('change',async event=>{
   try{
     busy(true);
     await loadCorpus(key);
-    if(song&&await reroll(crypto.getRandomValues(new Uint32Array(1))[0],{song,text:corpusText,mode:key==='river'?'prose':undefined}))refresh();
+    if(song&&await reroll(crypto.getRandomValues(new Uint32Array(1))[0],{song,text:corpusText}))refresh();
   }catch(error){fail(error);}finally{busy(false);}
 });
 $('offset').value=offset;$('offsetValue').textContent=`${offset.toFixed(2)} с`;
@@ -432,7 +432,7 @@ $('corpusFile').addEventListener('change',async event=>{
   try{
     const text=await fileText(file);
     if(song&&!await reroll(crypto.getRandomValues(new Uint32Array(1))[0],{song,text}))return;
-    corpusText=text;corpusName=file.name.replace(/\.txt$/i,'');corpusKey='custom';
+    corpusText=text;corpusName=file.name.replace(/\.txt$/i,'');corpusKey='custom';accentsUrl='';
     const option=[...$('corpus').options].find(o=>o.value==='custom')||new Option(corpusName,'custom');
     option.textContent=corpusName;if(!option.parentNode)$('corpus').append(option);
     $('corpus').value='custom';

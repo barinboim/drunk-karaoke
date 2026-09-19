@@ -7,7 +7,7 @@ const dictionaryReady=Promise.all([
 let state;
 self.onmessage=async({data})=>{
   try{
-    const dictionary=await dictionaryReady;
+    const dictionary=await dictionaryFor(data.accents);
     // Only the seed changed? Reuse the index and the song analysis instead of rebuilding them.
     const fresh=Boolean(data.song||data.text!==undefined);
     if(fresh) {
