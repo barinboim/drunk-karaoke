@@ -6,7 +6,15 @@ import {fileURLToPath} from 'node:url';
 import {parseUltraStar} from '../dist/ultrastar.js';
 
 const ROOT=fileURLToPath(new URL('..',import.meta.url));
-const DEFAULTS=[path.resolve(ROOT,'..','UltraStar mini songs'),path.join(ROOT,'жуки батарейка'),path.join(ROOT,'Альянс - На Заре')];
+const DIST=path.join(ROOT,'dist');
+// dist/songs — песни, которые едут вместе с сайтом (свободные лицензии).
+// Остальные папки остаются локальными и в публикацию не попадают.
+const DEFAULTS=[
+  path.join(DIST,'songs'),
+  path.resolve(ROOT,'..','UltraStar mini songs'),
+  path.join(ROOT,'жуки батарейка'),
+  path.join(ROOT,'Альянс - На Заре'),
+];
 const roots=(process.argv.slice(2).length?process.argv.slice(2):DEFAULTS).map(p=>path.resolve(p)).filter(p=>fs.existsSync(p));
 
 const walk=dir=>fs.readdirSync(dir,{withFileTypes:true}).flatMap(entry=>{
@@ -76,7 +84,13 @@ roots.forEach((root,index)=>{
     const images=files.filter(f=>/\.(jpg|jpeg|png|webp)$/i.test(f));
     const named=parsed.media.cover&&images.find(f=>path.basename(f).toLowerCase()===parsed.media.cover.toLowerCase().trim());
     const cover=named||images.sort((a,b)=>fs.statSync(a).size-fs.statSync(b).size)[0];
-    const url=file=>`library/${index}/${path.relative(root,file).split(path.sep).map(encodeURIComponent).join('/')}`;
+    // Песня внутри dist адресуется относительным путём — он одинаково работает
+    // и у локального сервера, и на GitHub Pages. Всё остальное отдаёт /library/<корень>/.
+    const inside=root.startsWith(DIST+path.sep)||root===DIST;
+    const url=file=>{
+      const parts=path.relative(inside?DIST:root,file).split(path.sep).map(encodeURIComponent).join('/');
+      return inside?parts:`library/${index}/${parts}`;
+    };
     songs.push({
       id:`${index}-${path.basename(folder).toLowerCase().replace(/[^a-zа-я0-9]+/gi,'-').replace(/^-|-$/g,'')}`,
       artist:clean(parsed.artist)||'Неизвестный исполнитель',
@@ -100,6 +114,9 @@ for(const song of songs.filter(s=>!s.skipped)) {
 }
 const ready=[...best.values()].sort((a,b)=>a.artist.localeCompare(b.artist,'ru')||a.title.localeCompare(b.title,'ru'));
 const skipped=songs.filter(s=>s.skipped);
-fs.writeFileSync(path.join(ROOT,'dist/data/library.json'),JSON.stringify({roots,songs:ready},null,1),'utf8');
+// В индекс попадают только внешние корни: пути внутри dist относительные, и файл
+// без абсолютных путей можно спокойно коммитить вместе с сайтом.
+const external=roots.filter(root=>!(root.startsWith(DIST+path.sep)||root===DIST));
+fs.writeFileSync(path.join(ROOT,'dist/data/library.json'),JSON.stringify({roots:external,songs:ready},null,1),'utf8');
 console.log(`Проиндексировано ${ready.length} песен из ${roots.length} папок; с минусовкой ${ready.filter(s=>s.instrumental).length}.`);
 for(const song of skipped)console.log(`  пропущено: ${song.folder} — ${song.skipped.slice(0,70)}`);

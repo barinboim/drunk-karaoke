@@ -6,6 +6,7 @@ dist/data/song.json
 жуки*/
 node_modules/
 .cache/
+# индекс песен: коммитим, только если в нём нет абсолютных путей (см. scripts/library.mjs)
 dist/data/library.json
 Alliance*/
 Альянс*/
@@ -18,3 +19,6 @@ dist/data/SOURCE.md
 
 # референсы: кадры чужих караоке-дисков, публикации не подлежат
 inspo/
+
+# песни со свободной лицензией, которые едут вместе с сайтом
+!dist/songs/
