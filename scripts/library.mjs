@@ -49,8 +49,13 @@ const minusLike=name=>/минус|minus|instrumental|инструментал|^\
 const duetLike=name=>/дуэт|duet/i.test(path.basename(name));
 const score=(file,kind)=>(minusLike(file)?4:0)+(kind==='chart'&&duetLike(file)?-3:0)+(/бэк|back/i.test(path.basename(file))?1:0);
 
+// Внешние корни нумеруются отдельно: именно их список уходит в индекс и читает сервер.
+// Если считать индекс по всем корням, ссылки разъезжаются с тем, что видит сервер.
+const isBundled=root=>root.startsWith(DIST+path.sep)||root===DIST;
+const external=roots.filter(root=>!isBundled(root));
 const songs=[];
-roots.forEach((root,index)=>{
+roots.forEach(root=>{
+  const index=external.indexOf(root);
   const folders=fs.statSync(root).isDirectory()
     ? fs.readdirSync(root,{withFileTypes:true}).filter(e=>e.isDirectory()).map(e=>path.join(root,e.name))
     : [];
@@ -86,7 +91,7 @@ roots.forEach((root,index)=>{
     const cover=named||images.sort((a,b)=>fs.statSync(a).size-fs.statSync(b).size)[0];
     // Песня внутри dist адресуется относительным путём — он одинаково работает
     // и у локального сервера, и на GitHub Pages. Всё остальное отдаёт /library/<корень>/.
-    const inside=root.startsWith(DIST+path.sep)||root===DIST;
+    const inside=isBundled(root);
     const url=file=>{
       const parts=path.relative(inside?DIST:root,file).split(path.sep).map(encodeURIComponent).join('/');
       return inside?parts:`library/${index}/${parts}`;
@@ -116,7 +121,6 @@ const ready=[...best.values()].sort((a,b)=>a.artist.localeCompare(b.artist,'ru')
 const skipped=songs.filter(s=>s.skipped);
 // В индекс попадают только внешние корни: пути внутри dist относительные, и файл
 // без абсолютных путей можно спокойно коммитить вместе с сайтом.
-const external=roots.filter(root=>!(root.startsWith(DIST+path.sep)||root===DIST));
 fs.writeFileSync(path.join(ROOT,'dist/data/library.json'),JSON.stringify({roots:external,songs:ready},null,1),'utf8');
 console.log(`Проиндексировано ${ready.length} песен из ${roots.length} папок; с минусовкой ${ready.filter(s=>s.instrumental).length}.`);
 for(const song of skipped)console.log(`  пропущено: ${song.folder} — ${song.skipped.slice(0,70)}`);
