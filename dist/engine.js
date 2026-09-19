@@ -254,17 +254,18 @@ export const LONG_NOTE=0.9;
 function describe(record,dictionary,language) {
   const tokens=tokenize(record.text,dictionary,language);
   const stresses=tokens.flatMap(t=>t.stresses);
-  const vowels=[],open=[];
+  const vowels=[],open=[],ends=[];
   for(const token of tokens){
     if(!token.count)continue;
     const parts=syllablesOf(token,language);
     for(let k=0;k<token.count;k++){
       vowels.push(token.vowels?.[k]||heldVowel(parts[k]||''));
       open.push(canHold(parts[k]||''));
+      ends.push(k===token.count-1);          // последний слог слова
     }
   }
   return {
-    ...record,count:stresses.length,stresses,vowels,open,
+    ...record,count:stresses.length,stresses,vowels,open,ends,
     unknown:stresses.length?tokens.filter(t=>t.unknown).reduce((a,t)=>a+t.count,0)/stresses.length:0,
     rhymes:tokens.at(-1)?.rhymes||[],lastWord:normalize(tokens.at(-1)?.word||''),
     head:normalize(tokens[0]?.word||''),language,
@@ -331,7 +332,10 @@ export function analyzeSong(song,dictionary) {
       notes,
       // что именно тянут на каждой ноте — нужно для протяжных мест
       held:notes.map(note=>heldVowel(note.text)),
-      spans:notes.map(note=>note.end-note.start)});
+      spans:notes.map(note=>note.end-note.start),
+      // Долгую ноту композитор почти всегда ставит на конец слова: по коллекции
+      // так в 89% случаев. Если тянуть середину слова, спеть строку невозможно.
+      wordEnd:notes.map((note,k)=>!notes[k+1]||/^\s/.test(notes[k+1].text))});
   });
   groups.forEach((group,g)=>{for(let p=g-1;p>=Math.max(0,g-4);p--)if(rhymeScore(group.rhymes,groups[p].rhymes)===1){group.rhymeWith=p;break;}});
   // Эхо: строка, которая дословно повторяет хвост предыдущей («…голос во мгле» после
@@ -419,7 +423,7 @@ function tailOf(picks,corpus,tail){
 function scoreCombo(picks,group,corpus,used,paired) {
   const records=picks.map(index=>corpus.records[index]);
   let mismatch=0,weight=0,slot=0;
-  let longNotes=0,vowelHits=0,holdMisses=0;
+  let longNotes=0,vowelHits=0,holdMisses=0,wordBreaks=0;
   for(const record of records) {
     for(let k=0;k<record.count;k++,slot++) {
       const span=group.spans[slot]??.25;
@@ -432,12 +436,18 @@ function scoreCombo(picks,group,corpus,used,paired) {
         longNotes++;
         if(group.held[slot]&&group.held[slot]===record.vowels[k])vowelHits++;
         if(!record.open[k])holdMisses++;
+        // Тянуть можно только то, что кончает слово: «ле———тнее» не спеть.
+        // Штраф по длине ноты: четыре секунды посреди слова невозможны,
+        // а секунда — терпима.
+        if(group.wordEnd[slot]&&!record.ends[k])
+          wordBreaks+=Math.min(1,(span-LONG_NOTE)/1.5);
       }
     }
   }
   mismatch=weight?mismatch/weight:0;
   const vowelFit=longNotes?vowelHits/longNotes:0;
   const holdFail=longNotes?holdMisses/longNotes:0;
+  const wordFail=longNotes?wordBreaks/longNotes:0;
   const last=records.at(-1);
   const rhyme=paired?rhymeScore(last.rhymes,paired.rhymes):0;
   const sameLast=paired&&last.lastWord===paired.lastWord;
@@ -452,10 +462,10 @@ function scoreCombo(picks,group,corpus,used,paired) {
   // если записи всё же оказались соседями в файле — это приятно, но не обязательно
   let adjacent=0;
   for(let i=1;i<picks.length;i++)if(picks[i]===picks[i-1]+1)adjacent++;
-  const score=-mismatch*3.5+vowelFit*1.6-holdFail*.9+rhyme*.55-(sameLast?.9:0)
+  const score=-mismatch*3.5+vowelFit*1.6-holdFail*.9-wordFail*2.2+rhyme*.55-(sameLast?.9:0)
     -unknown*.7-reused/picks.length*1.8-sameHead*.7-sameSection*.3
     +adjacent*.25-(picks.length-1)*.35;
-  return {score,mismatch,rhyme,vowelFit,holdFail};
+  return {score,mismatch,rhyme,vowelFit,holdFail,wordFail};
 }
 
 export function generate(song,corpus,seed,analysis,{beam=6,branch=6,tries=220,jitter=.35}={}) {
