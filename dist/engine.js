@@ -327,13 +327,30 @@ export function analyzeSong(song,dictionary) {
     if(index.has(key)){groups[index.get(key)].lines.push(i);return;}
     index.set(key,groups.length);
     const notes=song.lines[i].notes;
-    groups.push({lines:[i],slots:template.slots,stresses:template.stresses,rhymes:template.rhymes,rhymeWith:-1,
+    groups.push({lines:[i],slots:template.slots,key:template.key,stresses:template.stresses,rhymes:template.rhymes,rhymeWith:-1,
       notes,
       // что именно тянут на каждой ноте — нужно для протяжных мест
       held:notes.map(note=>heldVowel(note.text)),
       spans:notes.map(note=>note.end-note.start)});
   });
   groups.forEach((group,g)=>{for(let p=g-1;p>=Math.max(0,g-4);p--)if(rhymeScore(group.rhymes,groups[p].rhymes)===1){group.rhymeWith=p;break;}});
+  // Эхо: строка, которая дословно повторяет хвост предыдущей («…голос во мгле» после
+  // «Ужасный голос во мгле»). Песня повторяет — пусть и подстановка повторяет.
+  const bare=key=>String(key||'').replace(/[^а-яёa-z' ]/g,'').replace(/\s+/g,' ').trim();
+  groups.forEach((group,g)=>{
+    const child=bare(group.key);
+    if(!child)return;
+    for(let p=g-1;p>=Math.max(0,g-6);p--){
+      const parent=groups[p];
+      if(parent.slots<=group.slots)continue;
+      const whole=bare(parent.key);
+      if(whole.length<=child.length||!whole.endsWith(child))continue;
+      if(whole[whole.length-child.length-1]!==' ')continue;   // только по границе слова
+      group.echoOf=p;
+      (parent.echoTails??=new Set()).add(group.slots);
+      break;
+    }
+  });
   return {templates,groups,language};
 }
 
@@ -359,7 +376,21 @@ function materialize(picks,corpus) {
 
 // Выбор комбинации: длина берётся с весом в пользу длинных записей, чтобы строка
 // собиралась из одной-трёх позиций, а не из горсти односложных.
-function sampleCombo(corpus,need,random) {
+/**
+ * Комбинация под нужное число слогов. Сначала пробуем закрыть строку ОДНОЙ записью:
+ * целая фраза всегда лучше склейки из кусков. tail — если у строки есть эхо, она
+ * обязана заканчиваться на границе записи, чтобы эху было что повторить целиком.
+ */
+function sampleCombo(corpus,need,random,tail=0) {
+  if(tail>0&&tail<need){
+    const head=sampleCombo(corpus,need-tail,random);
+    const rest=sampleCombo(corpus,tail,random);
+    return head&&rest?[...head,...rest]:null;
+  }
+  if(corpus.byLength.has(need)&&random()<.55){
+    const pool=corpus.byLength.get(need);
+    return [pool[Math.floor(random()*pool.length)]];
+  }
   const picks=[];let rest=need,budget=corpus.maxItems;
   while(rest>0&&budget>0) {
     const choices=corpus.available.filter(size=>size<=rest&&corpus.feasible[budget-1][rest-size]);
@@ -372,6 +403,17 @@ function sampleCombo(corpus,need,random) {
     rest-=size;budget--;
   }
   return rest===0?picks:null;
+}
+
+/** Последние записи комбинации, дающие ровно tail слогов. */
+function tailOf(picks,corpus,tail){
+  let sum=0;
+  for(let i=picks.length-1;i>=0;i--){
+    sum+=corpus.records[picks[i]].count;
+    if(sum===tail)return picks.slice(i);
+    if(sum>tail)return null;
+  }
+  return null;
 }
 
 function scoreCombo(picks,group,corpus,used,paired) {
@@ -412,7 +454,7 @@ function scoreCombo(picks,group,corpus,used,paired) {
   for(let i=1;i<picks.length;i++)if(picks[i]===picks[i-1]+1)adjacent++;
   const score=-mismatch*3.5+vowelFit*1.6-holdFail*.9+rhyme*.55-(sameLast?.9:0)
     -unknown*.7-reused/picks.length*1.8-sameHead*.7-sameSection*.3
-    +adjacent*.25-Math.max(0,picks.length-3)*.12;
+    +adjacent*.25-(picks.length-1)*.35;
   return {score,mismatch,rhyme,vowelFit,holdFail};
 }
 
@@ -425,11 +467,27 @@ export function generate(song,corpus,seed,analysis,{beam=6,branch=6,tries=220,ji
     if(!corpus.feasible[corpus.maxItems][group.slots])
       throw Error(`В корпусе нет записей, которые складываются ровно в ${group.slots} ${group.slots===1?'слог':group.slots<5?'слога':'слогов'} (строка ${group.lines[0]+1}). Нужны записи других длин.`);
     const next=[];
+    // Эхо не выбирает ничего своего: оно повторяет хвост родительской строки.
+    if(group.echoOf!==undefined){
+      for(const state of beams){
+        const parent=state.picks[group.echoOf];
+        const picks=parent?.tail?.length?parent.tail:null;
+        if(!picks)continue;
+        const judged=scoreCombo(picks,group,corpus,new Set(),null);
+        next.push({used:state.used,texts:state.texts,
+          picks:[...state.picks,{picks,last:corpus.records[picks.at(-1)],
+            mismatch:judged.mismatch,rhyme:judged.rhyme,vowelFit:judged.vowelFit,echo:true}],
+          score:state.score+judged.score});
+      }
+      if(next.length){next.sort((a,b)=>b.score-a.score);beams=next.slice(0,beam);continue;}
+      // хвоста не нашлось — эхо подбирается как обычная строка
+    }
+    const tailSize=group.echoTails?Math.max(...group.echoTails):0;
     for(const state of beams) {
       const paired=group.rhymeWith>=0?state.picks[group.rhymeWith]:null;
       const ranked=[],seen=new Set();
       for(let t=0;t<tries;t++) {
-        const picks=sampleCombo(corpus,group.slots,random);
+        const picks=sampleCombo(corpus,group.slots,random,tailSize);
         if(!picks)continue;
         const key=picks.join(',');
         if(seen.has(key)||state.texts.has(key))continue;
@@ -443,7 +501,8 @@ export function generate(song,corpus,seed,analysis,{beam=6,branch=6,tries=220,ji
         const used=new Set(state.used);for(const index of choice.picks)used.add(index);
         next.push({used,texts:new Set(state.texts).add(choice.key),
           picks:[...state.picks,{picks:choice.picks,last:corpus.records[choice.picks.at(-1)],
-            mismatch:choice.mismatch,rhyme:choice.rhyme,vowelFit:choice.vowelFit}],
+            mismatch:choice.mismatch,rhyme:choice.rhyme,vowelFit:choice.vowelFit,
+            tail:tailSize?tailOf(choice.picks,corpus,tailSize):null}],
           score:state.score+choice.score});
       }
     }

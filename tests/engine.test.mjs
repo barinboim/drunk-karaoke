@@ -131,6 +131,31 @@ test('a long note lands on a vowel you can actually hold', () => {
   assert.ok(matched/long>.4,`гласная совпала лишь в ${Math.round(100*matched/long)}% протяжных нот`);
 });
 
+test('a line that echoes the tail of the one before repeats its words', () => {
+  // «Ужасный голос во мгле» → «голос во мгле»: песня повторяет хвост, пусть и подстановка
+  const chart=chartOf([
+    ['У','жас','ный',' го','лос',' во',' мгле'],
+    ['Го','лос',' во',' мгле'],
+    ['Даль','ше',' дру','гая',' стро','ка'],
+  ]);
+  const song=parseUltraStar(chart);
+  const plan=analyzeSong(song,dictionary);
+  const echo=plan.groups.findIndex(group=>group.echoOf!==undefined);
+  assert.ok(echo>0,'эхо-строка не распознана');
+  assert.equal(plan.groups[echo].echoOf,0);
+
+  const wide=buildCorpus(menu,dictionary,{lengths:[...new Set(song.lines.map(l=>l.notes.length))]});
+  for(let seed=0;seed<25;seed++){
+    const {lines}=generate(song,wide,seed,plan);
+    const parent=lines[plan.groups[0].lines[0]];
+    const tail=lines[plan.groups[echo].lines[0]];
+    assert.ok(parent.text.endsWith(tail.text),
+      `эхо «${tail.text}» не является хвостом строки «${parent.text}»`);
+    // записи остаются целыми: эхо повторяет их, а не режет
+    tail.items.forEach((item,k)=>assert.equal(item,parent.items[parent.items.length-tail.items.length+k]));
+  }
+});
+
 test('seeds are reproducible and actually differ', () => {
   assert.deepEqual(generate(song,corpus,42,analysis).lines.map(l=>l.text),generate(song,corpus,42,analysis).lines.map(l=>l.text));
   const a=generate(song,corpus,42,analysis).lines.map(l=>l.text),b=generate(song,corpus,43,analysis).lines.map(l=>l.text);
