@@ -218,6 +218,19 @@ main{flex:1;min-height:0;width:100%;max-width:1180px;margin:0 auto;padding:14px 
 .picker-field.check{justify-content:flex-start;gap:8px}
 .save-bar{height:12px;border:2px solid #000;border-radius:7px;background:#0d0e11;overflow:hidden;margin:10px 0 14px}
 .save-bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,#12b32c,#9dffae);transition:width .2s}
+.studio-bottom{display:grid;grid-template-columns:auto 1fr;gap:6px}
+.score-box{text-align:center;max-width:380px}
+.score-total{margin:0;font-size:64px;font-weight:700;line-height:1;color:var(--green);
+  filter:drop-shadow(3px 0 0 #000) drop-shadow(-3px 0 0 #000) drop-shadow(0 3px 0 #000) drop-shadow(0 -3px 0 #000)}
+.score-title{margin:10px 0 2px;font-size:20px;font-weight:700;color:var(--yellow);text-shadow:2px 2px 0 #000}
+.score-quip{margin:0 0 16px;font-size:12px;color:var(--dim)}
+.score-bars{display:grid;gap:8px;margin-bottom:14px;text-align:left}
+.score-row{display:grid;grid-template-columns:96px 1fr 44px;align-items:center;gap:8px;font-size:12px}
+.score-row b{font-weight:400;color:var(--dim)}
+.score-row i{font-style:normal;text-align:right;font-weight:700;font-variant-numeric:tabular-nums}
+.score-track{height:12px;border:2px solid #000;border-radius:7px;background:#0d0e11;overflow:hidden}
+.score-track span{display:block;height:100%;background:linear-gradient(90deg,#12b32c,#9dffae)}
+.score-row.weak .score-track span{background:linear-gradient(90deg,#a4441f,#ff9d6b)}
 .picker-cancel{width:100%;border:0;background:none;color:var(--dim);font-size:12px;padding:8px}
 .picker-cancel:hover{color:var(--ink)}
 

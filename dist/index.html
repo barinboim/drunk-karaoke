@@ -100,7 +100,10 @@
       <ol id="studioBody" class="take-list"></ol>
 
       <p id="studioHint" class="studio-hint"></p>
-      <button id="studioExport" class="pill blue" disabled>⬇ Свести и скачать</button>
+      <div class="studio-bottom">
+        <button id="studioScore" class="pill" disabled>★ Оценка</button>
+        <button id="studioExport" class="pill blue" disabled>⬇ Сохранить</button>
+      </div>
     </aside>
   </div>
 
@@ -215,6 +218,17 @@
     <button class="picker-choice" data-mode="takes"><b>⏺ Запись по репликам</b><small>по одной фразе, дублей сколько угодно</small></button>
     <button class="picker-choice" data-mode="full"><b>⏺ Запись целой песни</b><small>один заход от начала до конца</small></button>
     <button class="picker-cancel" id="pickerCancel">Отмена</button>
+  </div>
+</div>
+
+<div id="scoreboard" class="picker" hidden>
+  <div class="picker-box score-box">
+    <p class="score-total" id="scoreTotal">0</p>
+    <p class="score-title" id="scoreTitle"></p>
+    <p class="score-quip" id="scoreQuip"></p>
+    <div class="score-bars" id="scoreBars"></div>
+    <p class="picker-note" id="scoreNote"></p>
+    <button id="scoreClose" class="picker-choice"><b>Ещё раз</b><small>вернуться к записи</small></button>
   </div>
 </div>
 

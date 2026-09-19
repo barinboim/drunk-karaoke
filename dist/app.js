@@ -483,9 +483,24 @@ $('export').addEventListener('click',()=>{
   setTimeout(()=>URL.revokeObjectURL(url),1000);
 });
 
+/* ---------- оценка вне потока интерфейса ---------- */
+const judge=new Worker('scorer.js',{type:'module'});
+const judging=new Map();let judgeId=0;
+judge.onmessage=({data})=>{const job=judging.get(data.id);if(!job)return;judging.delete(data.id);
+  data.error?job.reject(Error(data.error)):job.resolve(data.result);};
+judge.onerror=()=>{for(const job of judging.values())job.reject(Error('Оценка не запустилась'));judging.clear();};
+function score(takes,lines){
+  return new Promise((resolve,reject)=>{
+    const id=++judgeId;judging.set(id,{resolve,reject});
+    // копии буферов: передавать оригиналы нельзя, дубли ещё понадобятся для сведения
+    const payload=takes.map(take=>({samples:take.samples.slice(),sampleRate:take.sampleRate,at:take.at,line:take.line??null}));
+    judge.postMessage({id,takes:payload,lines},payload.map(take=>take.samples.buffer));
+  });
+}
+
 /* ---------- студия ---------- */
 const studio=new Studio({
-  audio,$,fail,hearLine,stopHear,
+  audio,$,fail,hearLine,stopHear,score,
   song:()=>song,entry:()=>entry,version:()=>version,
   backdrops:()=>(stock.length?stock:backdrops),
 });

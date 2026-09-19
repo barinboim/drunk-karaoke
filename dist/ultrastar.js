@@ -34,7 +34,8 @@ function readRows(text) {
     const length=Number(match[3]);
     const text_=healLatin(match[5]);
     if(!text_.trim()&&!/^\s/.test(match[5]))continue;
-    push({beat:Number(match[2])+offset,length:Math.max(1,length),pitch:Number(match[4]),text:text_,free:match[1]==='F'});
+    push({beat:Number(match[2])+offset,length:Math.max(1,length),pitch:Number(match[4]),text:text_,
+      free:match[1]==='F',golden:match[1]==='*'});
   }
   flush();
   return {headers,players,tempos:rows};
@@ -106,7 +107,8 @@ export function parseUltraStar(text,{voice='merge'}={}) {
     for(const block of blocks) {
       const slots=toSlots(block,language);
       if(!slots.length)continue;
-      const notes=slots.map(slot=>({text:slot.text,beat:slot.beat,length:slot.length,pitch:slot.pitch,start:at(slot.beat),end:at(slot.beat+slot.length)}));
+      const notes=slots.map(slot=>({text:slot.text,beat:slot.beat,length:slot.length,pitch:slot.pitch,
+        golden:Boolean(slot.golden),free:Boolean(slot.free),start:at(slot.beat),end:at(slot.beat+slot.length)}));
       notes.sort((a,b)=>a.start-b.start||a.end-b.end);
       for(let i=1;i<notes.length;i++)if(notes[i].start<notes[i-1].end)notes[i-1].end=notes[i].start; // clip overlaps rather than fail
       lines.push({voice:id,notes,original:notes.map(n=>n.text).join('').replace(/\s+/g,' ').trim(),start:notes[0].start,end:notes.at(-1).end});

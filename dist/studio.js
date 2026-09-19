@@ -41,6 +41,11 @@ export class Studio {
     this.$('studioOrig').addEventListener('click',()=>this.hearOriginal());
     this.$('studioDrop').addEventListener('click',()=>this.drop());
     this.$('studioExport').addEventListener('click',()=>this.openSaver());
+    this.$('studioScore').addEventListener('click',()=>this.showScore());
+    this.$('scoreClose').addEventListener('click',()=>{this.$('scoreboard').hidden=true;});
+    this.$('scoreboard').addEventListener('click',event=>{
+      if(event.target===this.$('scoreboard'))this.$('scoreboard').hidden=true;
+    });
     this.$('saveCancel').addEventListener('click',()=>{
       if(this.saving)this.abort=true; else this.$('saver').hidden=true;
     });
@@ -54,7 +59,7 @@ export class Studio {
   /* ---------- режим и сброс ---------- */
   open(mode,micId=''){
     this.mode=mode;this.micId=micId;
-    this.takes.clear();
+    this.takes.clear();this.lineScores=null;
     this.backing=null;this.backingFor='';
     this.target=0;
     this.stopEverything();
@@ -123,11 +128,13 @@ export class Studio {
     this.audio.pause();
     this.$('countdown').hidden=true;
     // at — момент песни, которому отвечает первый сэмпл записи
-    if(take&&take.duration>0.25)this.takes.set(this.key,{...normalize(take),at:this.startedAt-this.ring});
+    if(take&&take.duration>0.25)this.takes.set(this.key,{...normalize(take),at:this.startedAt-this.ring,
+      line:this.mode==='full'?null:this.target});
     this.paint();
   }
 
   drop(){
+    this.lineScores?.delete(this.target);
     this.takes.delete(this.key);
     this.stopEverything();
     this.paint();
@@ -172,6 +179,52 @@ export class Studio {
       this.source=source;this.state='playing';
       this.paint();
     }catch(error){this.ctx.fail(Error(`Не удалось свести дубль: ${error.message}`));}
+  }
+
+  /* ---------- оценка ---------- */
+  async showScore(){
+    if(!this.takes.size)return;
+    this.stopEverything();this.ctx.stopHear();this.audio.pause();
+    const button=this.$('studioScore');
+    button.disabled=true;button.textContent='Считаем…';
+    try{
+      const result=await this.ctx.score([...this.takes.values()],this.lines);
+      this.paintScore(result);
+      this.$('scoreboard').hidden=false;
+    }catch(error){this.ctx.fail(Error(`Не удалось посчитать оценку: ${error.message}`));}
+    finally{button.disabled=false;button.textContent='★ Оценка';}
+  }
+
+  paintScore(result){
+    this.$('scoreTotal').textContent=result.total.toLocaleString('ru');
+    this.$('scoreTitle').textContent=result.title;
+    this.$('scoreQuip').textContent=result.quip;
+    const rows=[
+      ['Интонация',result.pitch,'попадание в ноты'],
+      ['Ритм',result.rhythm,'вступал вовремя'],
+      ...(result.golden===null?[]:[['Золотые ноты',result.golden,'они весят вдвое']]),
+      ['Охват',result.coverage,'сколько песни спето'],
+    ];
+    const holder=this.$('scoreBars');
+    holder.replaceChildren();
+    for(const [name,value,hint] of rows){
+      const row=document.createElement('div');
+      row.className='score-row'+(value<50?' weak':'');
+      row.title=hint;
+      const label=document.createElement('b');label.textContent=name;
+      const track=document.createElement('div');track.className='score-track';
+      const fill=document.createElement('span');fill.style.width=`${Math.max(0,Math.min(100,value))}%`;
+      track.append(fill);
+      const number=document.createElement('i');number.textContent=`${value}%`;
+      row.append(label,track,number);
+      holder.append(row);
+    }
+    this.$('scoreNote').textContent=this.mode==='full'
+      ? `Разобрано нот: ${result.notes}. Октава не важна — считается только чистота тона.`
+      : `Разобрано нот: ${result.notes} в ${result.lines.length} записанных репликах.`;
+    // оценки по репликам видно прямо в списке дублей
+    this.lineScores=new Map(result.lines.map(line=>[line.line,line]));
+    this.paint();
   }
 
   /* ---------- экспорт ---------- */
@@ -277,6 +330,7 @@ export class Studio {
     this.$('studioDrop').disabled=!has||busy;
     this.$('studioOrig').disabled=busy||!this.ctx.entry()?.vocal;
     this.$('studioExport').disabled=!this.takes.size||busy;
+    this.$('studioScore').disabled=!this.takes.size||busy;
     this.$('phrasePrev').disabled=whole||busy||this.target<=0;
     this.$('phraseNext').disabled=whole||busy||this.target>=this.lines.length-1;
 
@@ -311,7 +365,10 @@ export class Studio {
       button.classList.toggle('done',this.takes.has(index));
       const stamp=document.createElement('small');stamp.textContent=clock(line.start);
       const text=document.createElement('span');text.textContent=plain(version[index]?.text||line.original);
-      const mark=document.createElement('b');mark.textContent=this.takes.has(index)?'✓':'';
+      const mark=document.createElement('b');
+      const scored=this.lineScores?.get(index);
+      mark.textContent=scored?`${scored.pitch}%`:(this.takes.has(index)?'✓':'');
+      if(scored)mark.style.color=scored.pitch>=70?'var(--green)':scored.pitch>=45?'var(--yellow)':'#ff9d6b';
       button.append(stamp,text,mark);
       button.addEventListener('click',()=>{this.stopEverything();this.ctx.stopHear();this.target=index;this.paint();});
       item.append(button);holder.append(item);

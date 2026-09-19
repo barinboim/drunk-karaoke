@@ -211,3 +211,78 @@ test('English words come from the pronouncing dictionary, not from spelling', ()
     assert.equal(parts.length,analyzeEnglishWord(word,cmu).count);
   }
 });
+
+// ---------------------------------------------------------------------------
+// Оценка пения
+// ---------------------------------------------------------------------------
+import {detectPitches,hzToMidi,semitoneGap} from '../dist/pitch.js';
+import {scoreTakes,credit} from '../dist/score.js';
+
+const RATE=44100;
+/** Синтетический певец: тянет ровно ноты разметки, сдвинутые на offset полутонов. */
+function singer(lines,offset=0,{silent=false}={}){
+  const from=lines[0].notes[0].start-0.3;
+  const to=lines.at(-1).notes.at(-1).end+0.3;
+  const samples=new Float32Array(Math.ceil((to-from)*RATE));
+  if(!silent){
+    let phase=0;
+    for(let i=0;i<samples.length;i++){
+      const when=from+i/RATE;
+      let hz=0;
+      for(const line of lines)for(const note of line.notes)
+        if(when>=note.start&&when<note.end){hz=440*Math.pow(2,(note.pitch+60+offset-69)/12);break;}
+      if(hz){phase+=2*Math.PI*hz/RATE;samples[i]=0.35*Math.sin(phase)+0.12*Math.sin(2*phase);}
+    }
+  }
+  return {samples,sampleRate:RATE,at:from};
+}
+
+test('pitch detection is accurate enough to judge singing', () => {
+  for(const hz of [110,196,261.63,440,659.25]){
+    const samples=new Float32Array(RATE*0.5);
+    for(let i=0;i<samples.length;i++)
+      samples[i]=0.4*Math.sin(2*Math.PI*hz*i/RATE)+0.15*Math.sin(4*Math.PI*hz*i/RATE);
+    const found=[...detectPitches(samples,RATE).hz].filter(x=>x>0).sort((a,b)=>a-b);
+    assert.ok(found.length>3,`на ${hz} Гц тон не найден`);
+    const cents=Math.abs(1200*Math.log2(found[found.length>>1]/hz));
+    assert.ok(cents<25,`на ${hz} Гц ошибка ${cents.toFixed(0)} центов`);
+  }
+  // тишина и шум не должны давать уверенный тон
+  assert.equal([...detectPitches(new Float32Array(RATE*0.3),RATE).hz].filter(x=>x>0).length,0);
+  const noise=new Float32Array(RATE*0.3);
+  for(let i=0;i<noise.length;i++)noise[i]=(Math.random()*2-1)*0.3;
+  assert.equal([...detectPitches(noise,RATE).clarity].filter(c=>c>0.7).length,0);
+});
+
+test('octave does not matter, being off by a few semitones does', () => {
+  const lines=song.lines.slice(0,3);
+  const exact=scoreTakes([singer(lines,0)],song.lines);
+  const octave=scoreTakes([singer(lines,12)],song.lines);
+  const semitone=scoreTakes([singer(lines,1)],song.lines);
+  const far=scoreTakes([singer(lines,3)],song.lines);
+  const silent=scoreTakes([singer(lines,0,{silent:true})],song.lines);
+
+  assert.ok(exact.pitch>90,`точное пение дало лишь ${exact.pitch}%`);
+  assert.ok(Math.abs(exact.pitch-octave.pitch)<8,'октава вверх не должна менять оценку');
+  assert.ok(semitone.pitch<exact.pitch&&semitone.pitch>40,'полутон мимо — частичный зачёт');
+  assert.ok(far.pitch<15,`три полутона мимо дали ${far.pitch}%`);
+  assert.equal(silent.pitch,0);
+  assert.ok(silent.total<exact.total/4);
+  assert.equal(credit(0),1);
+  assert.equal(credit(5),0);
+  assert.equal(semitoneGap(hzToMidi(440)+12,hzToMidi(440)),0,'октава сводится к нулю');
+});
+
+test('a take is judged only on the notes it actually covers', () => {
+  // Запись шире реплики: в запас до и после попадают куски соседних строк.
+  // Они не должны получать оценку — иначе неспетая строка портит результат.
+  const one=scoreTakes([singer(song.lines.slice(0,1),0)],song.lines);
+  assert.equal(one.lines.length,1,`разобрано строк: ${one.lines.length}`);
+  assert.equal(one.lines[0].line,0);
+  assert.equal(one.lines[0].notes,song.lines[0].notes.length,'должны быть разобраны все ноты строки');
+
+  const three=scoreTakes([singer(song.lines.slice(0,3),0)],song.lines);
+  assert.equal(three.lines.length,3);
+  assert.ok(three.coverage>one.coverage,'спел больше — охват больше');
+  assert.ok(one.coverage>0&&three.coverage<100,'охват считается по долям, а не всё или ничего');
+});
