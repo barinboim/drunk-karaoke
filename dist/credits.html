@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Пьяное караоке — источники</title>
+<link rel="icon" href="favicon.svg">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="topbar">
+  <a class="topbar-brand" href="./"><img src="logo.svg" alt="Пьяное караоке"><i>на главную</i></a>
+</div>
+<main>
+  <div class="screen" style="overflow:auto">
+    <div class="screen-head"><h1>Источники</h1></div>
+    <p class="method">Фоновые картинки взяты с <a href="https://commons.wikimedia.org/" style="color:var(--green)">Викисклада</a>
+    и намеренно пережаты до вида караоке-диска. Ниже — автор и лицензия каждой.</p>
+    <p class="method">Словарь ударений — <a href="https://github.com/Badestrand/russian-dictionary" style="color:var(--green)">OpenRussian</a>, CC BY-SA 4.0.
+    Тексты датасетов написаны для этого проекта. Песни здесь не раздаются.</p>
+    <ol id="list" class="method" style="max-width:none;line-height:1.7"></ol>
+  </div>
+</main>
+<script type="module">
+const list=document.getElementById('list');
+try{
+  const credits=await fetch('media/backdrops/CREDITS.json').then(r=>r.json());
+  for(const item of credits){
+    const li=document.createElement('li');
+    const link=document.createElement('a');
+    link.href=item.page;link.textContent=item.title;link.target='_blank';link.rel='noopener';
+    link.style.color='var(--ink)';
+    li.append(link,document.createTextNode(` — ${item.author}, ${item.license}`));
+    list.append(li);
+  }
+}catch{list.textContent='Список источников доступен там, где собраны фоны (npm run backdrops).';}
+</script>
+</body>
+</html>

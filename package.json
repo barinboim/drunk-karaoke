@@ -1,0 +1,11 @@
+{
+ "name": "drunk-karaoke",
+ "private": true,
+ "type": "module",
+ "scripts": {
+  "library": "node scripts/library.mjs",
+  "start": "node scripts/server.mjs",
+  "check": "node scripts/check-corpus.mjs",
+  "test": "node --test tests/*.test.mjs"
+ }
+}

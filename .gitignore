@@ -1,0 +1,20 @@
+.DS_Store
+.sites-runtime/
+dist/media/*
+!dist/media/backdrops/
+dist/data/song.json
+жуки*/
+node_modules/
+.cache/
+dist/data/library.json
+Alliance*/
+Альянс*/
+UltraStar*/
+
+
+# монолог не публикуем: это чужой текст, он остаётся в локальной версии
+dist/data/river.txt
+dist/data/SOURCE.md
+
+# референсы: кадры чужих караоке-дисков, публикации не подлежат
+inspo/
