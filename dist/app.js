@@ -7,6 +7,7 @@ const audio=$('audio');
 const PER_PAGE=15;
 const CORPORA={
   original:{name:'Оригинальный текст песни',plain:true},
+  reviews:{file:'data/reviews.txt',name:'Отзывы на бытовую технику'},
   ali:{file:'data/ali.txt',name:'Товары с маркетплейса'},
   pills:{file:'data/pills.txt',name:'Инструкция к лекарству'},
   ads:{file:'data/ads.txt',name:'Доска объявлений'},
