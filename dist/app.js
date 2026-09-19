@@ -104,7 +104,9 @@ let awaiting=null,micId='';
 function chooseSong(item){
   awaiting=item;
   $('pickerTitle').textContent=`${item.artist} — ${item.title}`;
-  $('pickerCorpus').value=corpusKey;
+  $('pickerOriginal').checked=corpusKey==='original';
+  if(corpusKey!=='original')$('pickerCorpus').value=corpusKey;
+  paintPickerSource();
   $('picker').hidden=false;
   listMics();
 }
@@ -147,7 +149,15 @@ $('micAllow').addEventListener('click',async()=>{
 });
 $('pickerMic').addEventListener('change',event=>{micId=event.target.value;});
 // Корпус наугад: выбирать из списка каждый раз долго, а суть игры в неожиданности.
+// Оригинал — не пункт списка, а отдельная галочка: она перебивает выбор источника.
+function paintPickerSource(){
+  const own=$('pickerOriginal').checked;
+  $('pickerCorpus').closest('.picker-field').classList.toggle('dimmed',own);
+  $('corpusDice').disabled=own;
+}
+$('pickerOriginal').addEventListener('change',paintPickerSource);
 $('corpusDice').addEventListener('click',()=>{
+  if($('pickerOriginal').checked)return;
   const select=$('pickerCorpus');
   const options=[...select.options].filter(option=>option.value!==select.value);
   if(!options.length)return;
@@ -156,7 +166,8 @@ $('corpusDice').addEventListener('click',()=>{
 });
 for(const button of document.querySelectorAll('.picker-choice'))
   button.addEventListener('click',async()=>{
-    const item=awaiting,mode=button.dataset.mode,key=$('pickerCorpus').value;
+    const item=awaiting,mode=button.dataset.mode;
+    const key=$('pickerOriginal').checked?'original':$('pickerCorpus').value;
     closePicker();
     if(!item)return;
     if(key!==corpusKey){try{await loadCorpus(key);}catch(error){return fail(error);}}
@@ -175,7 +186,7 @@ async function openSong(item,mode='live'){
     if(!corpusText)await loadCorpus(corpusKey);
     const done=await reroll(crypto.getRandomValues(new Uint32Array(1))[0],{song:next,text:corpusText,mode:undefined});
     if(!done)return;
-    entry=item;song=next;vocalOn=false;stopHear();shuffleBackdrops();$('corpus').value=corpusKey;studio.open(mode,micId);
+    entry=item;song=next;vocalOn=false;cuedLine=-1;stopHear();shuffleBackdrops();$('corpus').value=corpusKey;studio.open(mode,micId);
     if(audioObjectURL){URL.revokeObjectURL(audioObjectURL);audioObjectURL=null;}
     audio.src=item.audio;
     $('seek').max=song.duration;
@@ -398,7 +409,28 @@ audio.addEventListener('error',()=>{
 });
 audio.addEventListener('loadedmetadata',()=>{if(Number.isFinite(audio.duration))$('seek').max=audio.duration;});
 $('seek').addEventListener('input',event=>{audio.currentTime=Number(event.target.value);update();});
-$('toVoice').addEventListener('click',()=>{audio.currentTime=Math.max(0,song.lines[0].start-offset-2);play();});
+// Прыжок к следующей реплике, а не всегда к началу вокала: с длинными проигрышами
+// иначе не порепетируешь отдельный кусок. Помним, к чему уже подвели: иначе повторное
+// нажатие в подводке снова считало бы ту же реплику «следующей».
+let cuedLine=-1;
+$('toVoice').addEventListener('click',()=>{
+  if(!song)return;
+  const now=audio.currentTime+offset;
+  const waiting=cuedLine>=0&&cuedLine<song.lines.length
+    &&now<song.lines[cuedLine].start&&song.lines[cuedLine].start-now<=3;
+  let target;
+  if(waiting)target=Math.min(song.lines.length-1,cuedLine+1);
+  else{
+    const found=song.lines.findIndex(line=>line.start>now+.35);
+    target=found>=0?found:0;
+  }
+  const floor=target>0?song.lines[target-1].end:0;          // не заезжаем в предыдущую реплику
+  const lead=Math.min(2,Math.max(.4,song.lines[target].start-floor));
+  stopHear();
+  cuedLine=target;
+  audio.currentTime=Math.max(0,song.lines[target].start-offset-lead);
+  play();
+});
 const paintVolume=()=>{$('volumeValue').textContent=`${Math.round(audio.volume*100)}%`;};
 audio.volume=Number(localStorage.getItem('dk.volume')??0.8);
 $('volume').value=audio.volume;paintVolume();

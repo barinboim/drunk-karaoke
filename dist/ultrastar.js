@@ -126,6 +126,30 @@ export function parseUltraStar(text,{voice='merge'}={}) {
     if(!VOWEL.test(line.original))continue;
     kept.push(line);
   }
+  // Разметка нередко сваливает несколько музыкальных фраз в одну строку: короткое
+  // восклицание тонет в стене текста. Если внутри строки стоит сильный знак и после
+  // него настоящая пауза — это граница фразы, и строку надо разделить.
+  const PHRASE_GAP=0.25;
+  const split=[];
+  for(const line of kept){
+    let from=0;
+    for(let i=0;i<line.notes.length-1;i++){
+      if(!/[!?.…]\s*$/.test(line.notes[i].text))continue;
+      if(line.notes[i+1].start-line.notes[i].end<PHRASE_GAP)continue;
+      const part=line.notes.slice(from,i+1);
+      if(part.length){split.push(part);from=i+1;}
+    }
+    const tail=line.notes.slice(from);
+    if(tail.length)split.push(tail);
+  }
+  const phrases=split.map(notes=>({
+    notes,
+    original:notes.map(note=>note.text).join('').replace(/\s+/g,' ').trim(),
+    start:notes[0].start,end:notes.at(-1).end,
+    voice:notes[0].voice??1,
+  })).filter(line=>VOWEL.test(line.original));
+  kept.length=0;kept.push(...phrases);
+
   if(!kept.length)throw Error('В файле нет вокальных строк с гласными.');
   return {
     title:headers.TITLE||'Без названия',artist:headers.ARTIST||'Неизвестный исполнитель',

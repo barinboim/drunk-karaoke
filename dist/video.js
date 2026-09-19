@@ -135,6 +135,7 @@ export async function renderVideo({
   const ctx=canvas.getContext('2d');
 
   const images=(await Promise.all(backdrops.slice(0,24).map(loadImage))).filter(Boolean);
+  const logo=await loadImage('logo.svg');
   const audio=new AudioContext();
   if(audio.state==='suspended')await audio.resume();
   const source=audio.createBufferSource();
@@ -177,10 +178,27 @@ export async function renderVideo({
       scanlines(ctx,width,height);
 
       ctx.textBaseline='alphabetic';
+      const margin=width*.05;
+      // Логотип в правом верхнем углу, под ним адрес: ролик уезжает в ленту без нас.
+      let logoBottom=margin;
+      if(logo){
+        const logoWidth=width*(shape==='16:9'?.20:.28);
+        const logoHeight=logoWidth*logo.height/logo.width;
+        ctx.drawImage(logo,width-margin-logoWidth,margin*.7,logoWidth,logoHeight);
+        logoBottom=margin*.7+logoHeight;
+        ctx.textAlign='right';
+        ctx.font=`${Math.round(head*.42)}px ${FONT}`;
+        drawOutlined(ctx,'drunkaraoke.barinbo.im',width-margin,logoBottom+head*.5,
+          Math.max(3,head*.11),'#cfd6c6');
+      }
       if(title){
         ctx.textAlign='left';
         ctx.font=`bold ${head}px ${FONT}`;
-        drawOutlined(ctx,title,width*.05,height*.075,Math.max(6,head*.2),'#ffe14d');
+        const room=width-margin*2-(logo?width*(shape==='16:9'?.22:.30):0);
+        let shown=title;
+        while(shown.length>6&&ctx.measureText(shown).width>room)shown=shown.slice(0,-2);
+        if(shown!==title)shown=shown.trimEnd()+'…';
+        drawOutlined(ctx,shown,margin,margin*.7+head,Math.max(6,head*.2),'#ffe14d');
       }
 
       const index=song.lines.findIndex(line=>now>=line.start&&now<line.end);
