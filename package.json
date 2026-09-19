@@ -6,6 +6,7 @@
   "library": "node scripts/library.mjs",
   "start": "node scripts/server.mjs",
   "check": "node scripts/check-corpus.mjs",
-  "test": "node --test tests/*.test.mjs"
+  "test": "node --test tests/*.test.mjs",
+  "cmudict": "node scripts/build-cmudict.mjs"
  }
 }

@@ -19,3 +19,6 @@ inspo/
 
 # песни со свободной лицензией, которые едут вместе с сайтом
 !dist/songs/
+
+# CMUdict: 3.6 МБ, собирается npm run cmudict
+dist/data/cmudict.json

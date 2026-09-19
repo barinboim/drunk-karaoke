@@ -15,17 +15,120 @@ export function splitSyllables(word) {
   return positions.length?positions.map((end,i)=>word.slice(i?positions[i-1]:0,i===positions.length-1?word.length:end)):[word];
 }
 
+// ---------------------------------------------------------------------------
+// Английский. Написание о слогах не говорит: «through» — один слог, «every» — два.
+// Всё берём из CMUdict: число слогов, ударения, гласные и рифменный хвост.
+// ---------------------------------------------------------------------------
+const CMU_HELD={AA:'а',AE:'а',AH:'а',AO:'о',AW:'а',AY:'а',EH:'э',ER:'э',EY:'э',
+  IH:'и',IY:'и',OW:'о',OY:'о',UH:'у',UW:'у'};
+const LATIN=/[a-z]/i, CYRILLIC=/[а-яё]/i;
+
+/** Язык определяем по тому, чего в тексте больше. */
+export function detectLanguage(text) {
+  const latin=(String(text).match(/[a-z]/gi)||[]).length;
+  const cyrillic=(String(text).match(/[а-яё]/gi)||[]).length;
+  return latin>cyrillic?'en':'ru';
+}
+
+// Словарь может быть просто картой русских ударений (как раньше) либо парой языков.
+const asLexicon=source=>source instanceof Map?{ru:source,en:null}:(source||{ru:new Map(),en:null});
+
+export function analyzeEnglishWord(word,phonemes) {
+  const key=word.toLowerCase().replace(/[^a-z']/g,'');
+  const entry=key&&phonemes?.get(key);
+  if(!entry) {
+    // Слова нет в словаре: считаем слоги по группам гласных и не выдумываем ударение.
+    const count=Math.max(1,(key.match(/[aeiouy]+/g)||[]).length);
+    return {count,stresses:Array.from({length:count},()=>count===1?.35:.5),
+      vowels:Array.from({length:count},()=>''),rhymes:[],unknown:count>1,ambiguous:false};
+  }
+  const parts=entry.split(' ');
+  const nuclei=parts.filter(part=>/\d$/.test(part));
+  const count=nuclei.length||1;
+  const stresses=nuclei.map(part=>{
+    if(count===1)return .35;
+    const mark=part.slice(-1);
+    return mark==='1'?1:mark==='2'?.5:0;
+  });
+  const vowels=nuclei.map(part=>CMU_HELD[part.slice(0,-1)]||'');
+  const from=parts.findIndex(part=>part.endsWith('1'));
+  const tail=parts.slice(from>=0?from:0).map(part=>part.replace(/\d$/,'').toLowerCase()).join('');
+  return {count,stresses,vowels,rhymes:tail?[tail]:[],unknown:false,ambiguous:false};
+}
+
+/**
+ * Английское слово по написанию делим на столько кусков, сколько в нём слогов
+ * по словарю: режем после групп гласных, лишние стыки убираем, недостающие добавляем.
+ */
+export function splitEnglishSyllables(word,count) {
+  if(count<=1||word.length<2)return [word];
+  const groups=[...word.matchAll(/[aeiouy]+/gi)];
+  if(groups.length<2)return count<=1?[word]:evenly(word,count);
+  // Между двумя гласными группами: без согласных режем встык, одну согласную отдаём
+  // правому слогу, из двух и более одну оставляем левому. Так выходит «a-ban-don».
+  let cuts=[];
+  for(let i=1;i<groups.length;i++) {
+    const leftEnd=groups[i-1].index+groups[i-1][0].length;
+    const rightStart=groups[i].index;
+    const between=rightStart-leftEnd;
+    cuts.push(between<=1?rightStart-between:rightStart-(between-1));
+  }
+  cuts=cuts.filter(cut=>cut>0&&cut<word.length);
+  while(cuts.length>count-1) {
+    let drop=0,shortest=Infinity;
+    for(let i=0;i<cuts.length;i++) {
+      const before=i?cuts[i-1]:0,after=i+1<cuts.length?cuts[i+1]:word.length;
+      if(after-before<shortest){shortest=after-before;drop=i;}
+    }
+    cuts.splice(drop,1);
+  }
+  while(cuts.length<count-1) {
+    const bounds=[0,...cuts,word.length];
+    let at=0,longest=-1;
+    for(let i=0;i<bounds.length-1;i++)if(bounds[i+1]-bounds[i]>longest){longest=bounds[i+1]-bounds[i];at=i;}
+    if(longest<2)break;
+    cuts.push(Math.floor((bounds[at]+bounds[at+1])/2));
+    cuts.sort((a,b)=>a-b);
+  }
+  return slice(word,cuts);
+}
+
+function slice(word,cuts) {
+  const parts=[];let from=0;
+  for(const cut of cuts){parts.push(word.slice(from,cut));from=cut;}
+  parts.push(word.slice(from));
+  return parts.filter(Boolean);
+}
+
+/** Запасной путь: слово без гласных групп режем поровну. */
+function evenly(word,count) {
+  const size=Math.max(1,Math.round(word.length/count)),cuts=[];
+  for(let i=1;i<count;i++)cuts.push(Math.min(word.length-1,i*size));
+  return slice(word,[...new Set(cuts)].filter(cut=>cut>0&&cut<word.length));
+}
+
+/** Куски написания под слоги: у русского по гласным, у английского по словарю. */
+export function syllablesOf(token,language) {
+  return (language||detectLanguage(token.word))==='en'
+    ? splitEnglishSyllables(token.word,token.count)
+    : splitSyllables(token.word);
+}
+
 export function analyzeWord(word,dictionary) {
+  const lexicon=asLexicon(dictionary);
+  if(LATIN.test(word)&&!CYRILLIC.test(word))return analyzeEnglishWord(word,lexicon.en);
+  const dict=lexicon.ru;
   const letters=[...word.toLowerCase()],count=letters.filter(isVowel).length;
   let accents=[],vowel=-1;
   for(let i=0;i<letters.length;i++){if(isVowel(letters[i]))vowel++;if(letters[i]==='́')accents.push(vowel);}
-  if(!accents.length)accents=dictionary.get(normalize(word))||[];
+  if(!accents.length)accents=dict.get(normalize(word))||[];
   if(!Array.isArray(accents))accents=[accents];
   if(!accents.length&&letters.includes('ё'))accents=[letters.slice(0,letters.indexOf('ё')+1).filter(isVowel).length-1];
   if(count===1)accents=[0];
   const stresses=Array.from({length:count},(_,i)=>count===1?.35:accents.length?(accents.includes(i)?1/accents.length:0):.5);
   const parts=splitSyllables(word),rhymes=accents.map(stress=>phoneticTail(parts.slice(stress).join('')));
-  return {count,stresses,rhymes,unknown:count>1&&!accents.length,ambiguous:accents.length>1};
+  return {count,stresses,rhymes,vowels:parts.map(heldVowel),
+    unknown:count>1&&!accents.length,ambiguous:accents.length>1};
 }
 
 // Approximate pronunciation key from the stressed vowel; not a full phonology model.
@@ -61,8 +164,10 @@ export function withAccents(dictionary,accents) {
   return merged;
 }
 
-export function tokenize(text,dictionary) {
-  return [...text.matchAll(/[а-яё́]+/gi)].map(match=>({word:match[0],start:match.index,end:match.index+match[0].length,...analyzeWord(match[0],dictionary)}));
+export function tokenize(text,dictionary,language) {
+  const kind=language||detectLanguage(text);
+  const words=kind==='en'?/[a-z']+/gi:/[\u0430-\u044f\u0451\u0301]+/gi;
+  return [...text.matchAll(words)].map(match=>({word:match[0],start:match.index,end:match.index+match[0].length,...analyzeWord(match[0],dictionary)}));
 }
 
 export function randomGenerator(seed) {
@@ -146,19 +251,23 @@ const canHold=part=>/[аеёиоуыэюялмнрйь]$/.test(String(part).toLo
 /** Нота считается протяжной, если её заметно тянут. */
 export const LONG_NOTE=0.9;
 
-function describe(record,dictionary) {
-  const tokens=tokenize(record.text,dictionary);
+function describe(record,dictionary,language) {
+  const tokens=tokenize(record.text,dictionary,language);
   const stresses=tokens.flatMap(t=>t.stresses);
   const vowels=[],open=[];
   for(const token of tokens){
     if(!token.count)continue;
-    for(const part of splitSyllables(token.word)){vowels.push(heldVowel(part));open.push(canHold(part));}
+    const parts=syllablesOf(token,language);
+    for(let k=0;k<token.count;k++){
+      vowels.push(token.vowels?.[k]||heldVowel(parts[k]||''));
+      open.push(canHold(parts[k]||''));
+    }
   }
   return {
     ...record,count:stresses.length,stresses,vowels,open,
     unknown:stresses.length?tokens.filter(t=>t.unknown).reduce((a,t)=>a+t.count,0)/stresses.length:0,
     rhymes:tokens.at(-1)?.rhymes||[],lastWord:normalize(tokens.at(-1)?.word||''),
-    head:normalize(tokens[0]?.word||''),
+    head:normalize(tokens[0]?.word||''),language,
     dangling:tokens.length>1&&endings.has(normalize(tokens.at(-1).word)),
     tokens,
   };
@@ -169,7 +278,8 @@ export function buildCorpus(text,dictionary,{lengths,mode,maxItems=4}={}) {
   const wanted=[...new Set(lengths.filter(n=>n>0))],max=Math.max(...wanted);
   if(max>128)throw Error('В этой версии строка может содержать не более 128 слогов');
   const kind=mode||detectMode(text);
-  const records=splitRecords(text,kind).map(r=>describe(r,dictionary)).filter(r=>r.count&&!r.dangling);
+  const language=detectLanguage(text);
+  const records=splitRecords(text,kind).map(r=>describe(r,dictionary,language)).filter(r=>r.count&&!r.dangling);
   if(!records.length)throw Error('В корпусе не нашлось ни одной записи с русскими словами.');
 
   const byLength=new Map();
@@ -188,8 +298,8 @@ export function buildCorpus(text,dictionary,{lengths,mode,maxItems=4}={}) {
 
   const missing=wanted.filter(n=>!feasible[maxItems][n]);
   const flat=records.flatMap(r=>r.tokens);
-  return {text,mode:kind,records,byLength,available,feasible,maxItems,missing,stats:{
-    mode:kind,records:records.length,words:flat.length,
+  return {text,mode:kind,language,records,byLength,available,feasible,maxItems,missing,stats:{
+    mode:kind,language,records:records.length,words:flat.length,
     unknownWords:[...new Set(flat.filter(t=>t.unknown).map(t=>t.word.toLowerCase()))],
     ambiguousWords:[...new Set(flat.filter(t=>t.ambiguous).map(t=>t.word.toLowerCase()))],
     lengths:Object.fromEntries(available.map(n=>[n,byLength.get(n).length])),
@@ -201,8 +311,9 @@ export function buildCorpus(text,dictionary,{lengths,mode,maxItems=4}={}) {
 // Song side: syllable slots, stress template, repeated lines folded into groups.
 // ---------------------------------------------------------------------------
 export function analyzeSong(song,dictionary) {
+  const language=song.language||detectLanguage(song.lines.map(line=>line.original).join(' '));
   const templates=song.lines.map(line=>{
-    const tokens=tokenize(line.original,dictionary);
+    const tokens=tokenize(line.original,dictionary,language);
     const stresses=tokens.flatMap(t=>t.stresses);
     const slots=line.notes.length;
     while(stresses.length<slots)stresses.push(.5);            // markup noise stays neutral instead of fatal
@@ -223,7 +334,7 @@ export function analyzeSong(song,dictionary) {
       spans:notes.map(note=>note.end-note.start)});
   });
   groups.forEach((group,g)=>{for(let p=g-1;p>=Math.max(0,g-4);p--)if(rhymeScore(group.rhymes,groups[p].rhymes)===1){group.rhymeWith=p;break;}});
-  return {templates,groups};
+  return {templates,groups,language};
 }
 
 function materialize(picks,corpus) {
@@ -236,7 +347,7 @@ function materialize(picks,corpus) {
     record.tokens.forEach((token,n)=>{
       const separator=n?record.text.slice(record.tokens[n-1].end,token.start):'';
       if(!token.count){prefix+=separator+token.word;return;}
-      splitSyllables(token.word).forEach((part,s)=>{syllables.push((s===0?prefix+separator:'')+part);prefix='';});
+      syllablesOf(token,record.language).forEach((part,s)=>{syllables.push((s===0?prefix+separator:'')+part);prefix='';});
     });
     if(record.tokens.length)prefix+=record.text.slice(record.tokens.at(-1).end);
     if(prefix&&syllables.length)syllables[syllables.length-1]+=prefix;
@@ -366,7 +477,7 @@ export function originalVersion(song) {
   }));
   return {lines,stats:{
     mode:'original',records:song.lines.length,
-    words:song.lines.reduce((sum,line)=>sum+(line.original.match(/[а-яё\u0301]+/gi)||[]).length,0),
+    words:song.lines.reduce((sum,line)=>sum+(line.original.match(/[а-яёa-z'\u0301]+/gi)||[]).length,0),
     unknownWords:[],ambiguousWords:[],songUnknownWords:[],sections:[],
     lengths:{},groups:song.lines.length,lines:song.lines.length,
   }};

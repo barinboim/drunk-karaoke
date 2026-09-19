@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import {buildCorpus,analyzeSong,analyzeWord,generate,positionAt,normalize,rhymeScore,splitRecords,detectMode,heldVowel,LONG_NOTE} from '../dist/engine.js';
 import {parseUltraStar} from '../dist/ultrastar.js';
+import {analyzeEnglishWord,splitEnglishSyllables,detectLanguage} from '../dist/engine.js';
 
 const at=name=>new URL(`../dist/data/${name}`,import.meta.url);
 const dictionary=new Map(Object.entries(JSON.parse(fs.readFileSync(at('dictionary.json'),'utf8'))));
@@ -168,7 +169,10 @@ test('UltraStar: quarter beats, merged consonants, split multi-vowel notes, duet
   const duet=parseUltraStar('#BPM:120\n#GAP:0\nP1\n: 0 4 0 Раз\n- 4\nP2\n: 8 4 0 Два\n- 12\nE');
   assert.equal(duet.lines.length,2);
   assert.ok(duet.lines[0].start<duet.lines[1].start);
-  assert.throws(()=>parseUltraStar('#BPM:120\n#GAP:0\n: 0 4 0 Hello\n- 4\nE'),/англоязычная/);
+  // английская разметка теперь читается, и ноты в ней не дробятся по гласным буквам
+  const english=parseUltraStar('#BPM:120\n#GAP:0\n: 0 4 0 through\n: 4 4 0  the\n- 8\nE');
+  assert.equal(english.language,'en');
+  assert.equal(english.lines[0].notes.length,2,'у английской ноты один слог, сколько бы в ней ни было гласных');
   assert.throws(()=>parseUltraStar('#GAP:0\n: 0 4 0 Раз\nE'),/BPM/);
 });
 
@@ -185,4 +189,25 @@ test('impossible lengths are reported, reachable ones are built', () => {
   const tiny=buildCorpus('Борщ\nПлов\nКвас\n',dictionary,{lengths:[1,2,7]});
   assert.deepEqual(tiny.missing,[7],'семь слогов из односложных записей не собрать при лимите в 4 штуки');
   assert.equal(generate(song,wide,42,analysis).lines.length,song.lines.length);
+});
+
+test('English words come from the pronouncing dictionary, not from spelling', () => {
+  const cmu=fs.existsSync(at('cmudict.json'))
+    ? new Map(Object.entries(JSON.parse(fs.readFileSync(at('cmudict.json'),'utf8'))))
+    : null;
+  if(!cmu){console.log('CMUdict не собран, пропускаем');return;}
+  assert.equal(detectLanguage('boulevard of broken dreams'),'en');
+  assert.equal(detectLanguage('салат цезарь с курицей'),'ru');
+  // написание о слогах не говорит: три гласные буквы, один слог
+  assert.equal(analyzeEnglishWord('through',cmu).count,1);
+  assert.equal(analyzeEnglishWord('every',cmu).count,3);
+  assert.equal(analyzeEnglishWord('beautiful',cmu).count,3);
+  // главное ударение читается из словаря
+  assert.deepEqual(analyzeEnglishWord('abandon',cmu).stresses,[0,1,0]);
+  // деление написания восстанавливает слово целиком
+  for(const word of ['abandon','beautiful','boulevard','yesterday','remember']){
+    const parts=splitEnglishSyllables(word,analyzeEnglishWord(word,cmu).count);
+    assert.equal(parts.join(''),word);
+    assert.equal(parts.length,analyzeEnglishWord(word,cmu).count);
+  }
 });

@@ -29,7 +29,6 @@ worker.onerror=()=>{for(const job of pending.values())job.reject(Error('Не у�
 const compute=payload=>new Promise((resolve,reject)=>{const id=++requestId;pending.set(id,{resolve,reject});worker.postMessage({accents:accentsUrl,...payload,id});});
 
 /* ---------- small helpers ---------- */
-const clock=()=>$('clock').textContent=new Date().toLocaleTimeString('ru',{hour:'2-digit',minute:'2-digit'});
 const time=t=>`${Math.floor(Math.max(0,t)/60)}:${String(Math.floor(Math.max(0,t)%60)).padStart(2,'0')}`;
 const fail=error=>{$('error').textContent=error.message||String(error);$('error').hidden=false;};
 const clearError=()=>{$('error').hidden=true;};
@@ -138,6 +137,14 @@ $('micAllow').addEventListener('click',async()=>{
   }
 });
 $('pickerMic').addEventListener('change',event=>{micId=event.target.value;});
+// Корпус наугад: выбирать из списка каждый раз долго, а суть игры в неожиданности.
+$('corpusDice').addEventListener('click',()=>{
+  const select=$('pickerCorpus');
+  const options=[...select.options].filter(option=>option.value!==select.value);
+  if(!options.length)return;
+  select.value=options[Math.floor(Math.random()*options.length)].value;
+  $('corpusDice').animate([{transform:'rotate(0)'},{transform:'rotate(360deg)'}],{duration:400,easing:'ease-out'});
+});
 for(const button of document.querySelectorAll('.picker-choice'))
   button.addEventListener('click',async()=>{
     const item=awaiting,mode=button.dataset.mode,key=$('pickerCorpus').value;
@@ -475,7 +482,6 @@ const studio=new Studio({
 });
 
 /* ---------- boot ---------- */
-clock();setInterval(clock,20000);
 (function frame(){update();studio.tick(audio.currentTime);requestAnimationFrame(frame);})();
 try{
   let index=null;

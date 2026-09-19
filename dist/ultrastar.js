@@ -1,6 +1,6 @@
 // Tolerant UltraStar reader. Repairs real-world charts instead of rejecting them.
 import {splitSyllables} from './engine.js';
-const VOWEL=/[аеёиоуыэюя]/i;
+const VOWEL=/[аеёиоуыэюяaeiouy]/i;
 const CONFUSABLE={a:'а',e:'е',o:'о',p:'р',c:'с',y:'у',x:'х',k:'к',A:'А',B:'В',C:'С',E:'Е',H:'Н',K:'К',M:'М',O:'О',P:'Р',T:'Т',X:'Х'};
 // Charts typed on mixed keyboards hide Latin look-alikes inside Cyrillic words.
 const healLatin=value=>/[а-яё]/i.test(value)?value.replace(/[a-zA-Z]/g,c=>CONFUSABLE[c]??c):value;
@@ -58,7 +58,7 @@ function normaliseSpacing(players) {
 }
 
 // One note may carry several vowels; karaoke needs one slot per syllable.
-function toSlots(notes) {
+function toSlots(notes,language='ru') {
   const merged=[];let prefix=null;
   for(const note of notes) {
     if(!VOWEL.test(note.text)){
@@ -71,7 +71,7 @@ function toSlots(notes) {
   if(prefix&&merged.length){const last=merged.at(-1);last.text+=prefix.text;last.length=Math.max(last.length,prefix.beat+prefix.length-last.beat);}
   const slots=[];
   for(const note of merged) {
-    const count=vowels(note.text);
+    const count=language==='en'?1:vowels(note.text);
     if(count<2){slots.push(note);continue;}
     const lead=note.text.match(/^\s*/)[0],body=note.text.slice(lead.length);
     const parts=splitSyllables(body),weights=parts.map(p=>Math.max(1,p.length)),total=weights.reduce((a,b)=>a+b,0);
@@ -95,14 +95,16 @@ export function parseUltraStar(text,{voice='merge'}={}) {
   if(tempos.length)throw Error('Файл меняет темп по ходу песни — такая разметка пока не поддерживается.');
   const quarter=60/(bpm*4),at=beat=>gap+beat*quarter;
   const body=[...players.values()].flat(2).map(n=>n.text).join('');
-  if((body.match(/[a-z]/gi)||[]).length>(body.match(/[а-яё]/gi)||[]).length)throw Error('Это англоязычная разметка. Английский фонетический словарь пока не подключён — нужен CMUdict.');
+  // Английская разметка размечена по слогам сразу, поэтому ноты не дробим:
+  // в написании гласных больше, чем слогов («through» — одна нота, три гласные буквы).
+  const language=(body.match(/[a-z]/gi)||[]).length>(body.match(/[а-яё]/gi)||[]).length?'en':'ru';
   const voices=[...players.entries()].sort((a,b)=>a[0]-b[0]);
   if(!voices.length)throw Error('В файле нет нот.');
   const wanted=voice==='merge'?voices:voices.filter(([id])=>id===Number(voice)||voices.length===1);
   const lines=[];
   for(const [id,blocks] of (wanted.length?wanted:voices)) {
     for(const block of blocks) {
-      const slots=toSlots(block);
+      const slots=toSlots(block,language);
       if(!slots.length)continue;
       const notes=slots.map(slot=>({text:slot.text,beat:slot.beat,length:slot.length,pitch:slot.pitch,start:at(slot.beat),end:at(slot.beat+slot.length)}));
       notes.sort((a,b)=>a.start-b.start||a.end-b.end);
@@ -123,11 +125,9 @@ export function parseUltraStar(text,{voice='merge'}={}) {
     kept.push(line);
   }
   if(!kept.length)throw Error('В файле нет вокальных строк с гласными.');
-  const russian=kept.filter(l=>/[а-яё]/i.test(l.original)).length;
-  if(russian<kept.length*.5)throw Error('Похоже, это не русская песня. Английский фонетический словарь пока не подключён.');
   return {
     title:headers.TITLE||'Без названия',artist:headers.ARTIST||'Неизвестный исполнитель',
-    bpm,gap,lines:kept,duration:kept.at(-1).end+3,
+    bpm,gap,language,lines:kept,duration:kept.at(-1).end+3,
     media:{audio:headers.MP3||headers.AUDIO||'',instrumental:headers.INSTRUMENTAL||'',cover:headers.COVER||'',background:headers.BACKGROUND||''},
     voices:voices.length,
   };
