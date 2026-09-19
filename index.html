@@ -1,0 +1,241 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Пьяное караоке</title>
+<link rel="icon" href="favicon.svg">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<div class="topbar">
+  <span class="clock" id="clock">--:--</span>
+  <button class="topbar-brand" id="brandHome" title="На главную"><img src="logo.svg" alt="Пьяное караоке"><i>drunkaraoke.barinbo.im</i></button>
+</div>
+
+<main>
+
+<section id="libraryScreen" class="screen">
+  <div class="searchbar">
+    <span class="searchbar-icon">🔎</span>
+    <input id="search" type="search" placeholder="Какую песню поём?" autocomplete="off" spellcheck="false">
+    <button id="searchClear" class="searchbar-clear" hidden aria-label="Очистить">✕</button>
+  </div>
+  <div class="screen-head">
+    <h1>Выбери песню</h1>
+    <span class="screen-count" id="screenCount"></span>
+  </div>
+  <div class="channel-deck">
+    <button id="prevPage" class="arrow" aria-label="Назад">◀</button>
+    <div id="channels" class="channels"></div>
+    <button id="nextPage" class="arrow" aria-label="Вперёд">▶</button>
+  </div>
+  <div class="dots" id="pageDots"></div>
+  <p class="library-note" id="libraryNote">Читаем список песен…</p>
+
+  <div id="welcome" class="welcome" hidden>
+    <h2>Принеси свою песню</h2>
+    <p>Нужны два файла с твоего компьютера: караоке-разметка <b>UltraStar&nbsp;.txt</b> с послоговым
+    таймингом и аудио к ней — лучше минусовка. Ничего никуда не загружается: разбор, подбор слов,
+    запись и сведение целиком происходят в этой вкладке.</p>
+    <label class="file-pill big">Выбрать .txt и аудио<input id="welcomeFiles" type="file" accept=".txt,.mp3,.ogg,.wav,.m4a" multiple></label>
+    <p class="welcome-note">Песни здесь не раздаются: фонограммы и тексты принадлежат их авторам.
+    Локальная версия умеет индексировать целую папку с караоке — см. README в репозитории.</p>
+  </div>
+</section>
+
+<section id="stageScreen" class="screen" hidden>
+
+  <div class="stage-layout">
+    <div class="tv" id="tv">
+      <div class="backdrop" id="backdrop"></div>
+      <div class="grain"></div>
+      <div class="scanlines"></div>
+      <div class="tv-head">
+        <span class="tv-title" id="tvTitle"></span>
+        <span class="tv-badge" id="phase">ВСТУПЛЕНИЕ</span>
+      </div>
+      <div class="tv-text">
+        <p id="cue" class="cue"></p>
+        <div id="lyric" class="lyric"></div>
+        <p id="originalLine" class="original"></p>
+        <p id="nextLine" class="next-line"></p>
+      </div>
+      <div class="tv-foot">
+        <span id="corpusBadge"></span>
+        <span id="lineCount"></span>
+        <span id="fit"></span>
+      </div>
+      <div class="countdown" id="countdown" hidden></div>
+    </div>
+
+    <aside id="studio" class="studio" hidden>
+      <div class="studio-top">
+        <div class="studio-modes">
+          <button class="mode" data-mode="takes">По репликам</button>
+          <button class="mode" data-mode="full">Целиком</button>
+        </div>
+        <span id="studioCount"></span>
+      </div>
+
+      <div class="phrase">
+        <div class="phrase-nav">
+          <button id="phrasePrev" class="stepper" aria-label="Предыдущая реплика">◀</button>
+          <span id="phraseNo">—</span>
+          <button id="phraseNext" class="stepper" aria-label="Следующая реплика">▶</button>
+        </div>
+        <p id="phraseNew" class="phrase-new"></p>
+        <p id="phraseOld" class="phrase-old"></p>
+      </div>
+
+      <div class="meter"><i id="meterFill"></i></div>
+
+      <div class="studio-buttons">
+        <button id="studioRec" class="pill rec">⏺ Записать</button>
+        <button id="studioPlay" class="pill" disabled>▶ Дубль</button>
+        <button id="studioOrig" class="pill">♪ Оригинал</button>
+        <button id="studioDrop" class="pill" disabled aria-label="Удалить дубль">✖</button>
+      </div>
+
+      <ol id="studioBody" class="take-list"></ol>
+
+      <p id="studioHint" class="studio-hint"></p>
+      <button id="studioExport" class="pill blue" disabled>⬇ Свести и скачать</button>
+    </aside>
+  </div>
+
+  <div class="panel transport">
+    <button id="play" class="round" aria-label="Воспроизвести">▶</button>
+    <div class="track">
+      <div class="track-label">
+        <strong id="trackTitle"></strong>
+        <span id="time">0:00 <i>/ 0:00</i></span>
+      </div>
+      <div class="timeline">
+        <div id="progress"></div>
+        <input id="seek" type="range" min="0" max="100" step="0.01" value="0" aria-label="Позиция в песне">
+      </div>
+    </div>
+    <button id="toVoice" class="pill">К вокалу <span class="glyph">→</span></button>
+    <label class="volume">Громкость минуса<input id="volume" type="range" min="0" max="1" step="0.01" value="0.8" aria-label="Громкость минусовки"><output id="volumeValue">80%</output></label>
+  </div>
+
+  <div class="row">
+    <label class="field">Корпус слов
+      <select id="corpus">
+        <option value="original">Оригинальный текст песни</option>
+        <option value="ali">Товары с маркетплейса</option>
+        <option value="pills">Инструкция к лекарству</option>
+        <option value="ads">Доска объявлений</option>
+        <option value="menu">Меню ресторанов</option>
+        <option value="river">Идущий к реке</option>
+      </select>
+    </label>
+    <button id="shuffle" class="pill blue"><span class="glyph">⟳</span> Пересобрать</button>
+    <button id="vocalToggle" class="pill" disabled><span class="glyph">♪</span> Плюс</button>
+    <button id="settingsButton" class="pill" aria-expanded="false" aria-controls="settings">Настройки</button>
+    <button id="textButton" class="pill" aria-expanded="false" aria-controls="textPanel">Весь текст</button>
+  </div>
+
+  <div id="settings" class="panel settings" hidden>
+    <label class="field">Сдвиг текста
+      <input id="offset" type="range" min="-2" max="2" step="0.05" value="0">
+      <output id="offsetValue">0.00 с</output>
+    </label>
+    <label class="field check"><input id="showNext" type="checkbox" checked> Показывать следующую строку</label>
+    <label class="field check"><input id="showOriginal" type="checkbox" checked> Показывать оригинальный текст песни</label>
+    <div class="imports">
+      <label class="file-pill">Свой корпус .txt<input id="corpusFile" type="file" accept=".txt"></label>
+      <label class="file-pill">Своя песня: .txt + аудио<input id="songFiles" type="file" accept=".txt,.mp3,.ogg,.wav,.m4a" multiple></label>
+      <span>Файлы читаются только в браузере и никуда не отправляются.</span>
+    </div>
+  </div>
+
+  <div id="textPanel" class="panel text-panel" hidden>
+    <div class="panel-head">
+      <h2>Эта версия</h2>
+      <span id="seedLabel"></span>
+    </div>
+    <p class="method">Каждая строка собрана из <b>целых записей корпуса, взятых подряд</b> и ни разу не разрезанных. Повторяющиеся строки песни получают один и тот же текст. Нажми на строку, чтобы спеть её.</p>
+    <p id="stats" class="method"></p>
+    <details><summary>Ударения и ограничения</summary><p id="unknowns" class="method"></p></details>
+    <ol id="allLines"></ol>
+    <button id="export" class="pill">Скачать расчёты .json</button>
+  </div>
+
+  <div class="leave"><button id="homeButton" class="pill huge">⌂ К песням</button></div>
+
+</section>
+
+<div id="error" class="panel error" role="alert" hidden></div>
+
+</main>
+
+<div id="picker" class="picker" hidden>
+  <div class="picker-box">
+    <p class="picker-title" id="pickerTitle"></p>
+
+    <label class="picker-field">Слова берём из
+      <select id="pickerCorpus">
+        <option value="original">Оригинальный текст песни</option>
+        <option value="ali">Товары с маркетплейса</option>
+        <option value="pills">Инструкция к лекарству</option>
+        <option value="ads">Доска объявлений</option>
+        <option value="menu">Меню ресторанов</option>
+        <option value="river">Идущий к реке</option>
+      </select>
+    </label>
+
+    <div class="picker-mic">
+      <label class="picker-field">Микрофон
+        <select id="pickerMic"><option value="">по умолчанию</option></select>
+      </label>
+      <button id="micAllow" class="pill">Разрешить доступ</button>
+      <p class="picker-note" id="micNote">Для записи нужен доступ к микрофону.</p>
+    </div>
+
+    <button class="picker-choice" data-mode="live"><b>🎤 Просто петь</b><small>без записи, как караоке-автомат</small></button>
+    <button class="picker-choice" data-mode="takes"><b>⏺ Запись по репликам</b><small>по одной фразе, дублей сколько угодно</small></button>
+    <button class="picker-choice" data-mode="full"><b>⏺ Запись целой песни</b><small>один заход от начала до конца</small></button>
+    <button class="picker-cancel" id="pickerCancel">Отмена</button>
+  </div>
+</div>
+
+<div id="saver" class="picker" hidden>
+  <div class="picker-box">
+    <p class="picker-title">Сохранить дубль</p>
+
+    <label class="picker-field">Что сохраняем
+      <select id="saveFormat">
+        <option value="video">Ролик с картинкой и текстом</option>
+        <option value="wav">Только звук, WAV</option>
+      </select>
+    </label>
+    <label class="picker-field" id="saveShapeField">Кадр
+      <select id="saveShape">
+        <option value="9:16">9:16 — Reels и Shorts</option>
+        <option value="1:1">1:1 — квадрат</option>
+        <option value="16:9">16:9 — обычное видео</option>
+      </select>
+    </label>
+    <label class="picker-field">Отрезок
+      <select id="saveRange">
+        <option value="takes">Только записанное</option>
+        <option value="all">Вся песня</option>
+      </select>
+    </label>
+    <label class="picker-field check"><input id="saveOriginal" type="checkbox" checked> Показывать оригинальные слова</label>
+
+    <p class="picker-note" id="saveNote">Ролик снимается в реальном времени: сколько длится отрезок, столько и займёт.</p>
+    <div class="save-bar" id="saveBar" hidden><i id="saveFill"></i></div>
+
+    <button id="saveStart" class="picker-choice"><b>⬇ Сохранить</b><small id="saveHint"></small></button>
+    <button id="saveCancel" class="picker-cancel">Отмена</button>
+  </div>
+</div>
+
+<audio id="audio" preload="metadata"></audio>
+<script type="module" src="app.js"></script>
+</body>
+</html>

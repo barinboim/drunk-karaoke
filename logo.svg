@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 660 190" role="img" aria-label="Пьяное караоке">
+  <defs>
+    <linearGradient id="mic" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#9dffae"/><stop offset=".55" stop-color="#3dff57"/><stop offset="1" stop-color="#12b32c"/>
+    </linearGradient>
+    <clipPath id="half"><rect x="0" y="0" width="300" height="190"/></clipPath>
+  </defs>
+
+  <g transform="translate(24 28) rotate(-6)">
+    <rect x="18" y="0" width="46" height="74" rx="23" fill="url(#mic)" stroke="#000" stroke-width="7"/>
+    <path d="M6 56a35 35 0 0 0 70 0" fill="none" stroke="#000" stroke-width="13" stroke-linecap="round"/>
+    <path d="M6 56a35 35 0 0 0 70 0" fill="none" stroke="url(#mic)" stroke-width="7" stroke-linecap="round"/>
+    <path d="M41 91v30" stroke="#000" stroke-width="13" stroke-linecap="round"/>
+    <path d="M41 91v30" stroke="url(#mic)" stroke-width="7" stroke-linecap="round"/>
+    <path d="M18 126h46" stroke="#000" stroke-width="13" stroke-linecap="round"/>
+  </g>
+
+  <g font-family="'Comic Sans MS','Comic Sans','Chalkboard SE',cursive" font-weight="700"
+     paint-order="stroke fill" stroke="#000" stroke-linejoin="round">
+    <text x="132" y="82" font-size="62" stroke-width="14" fill="#fff" transform="rotate(-2 132 82)">ПЬЯНОЕ</text>
+    <text x="132" y="152" font-size="62" stroke-width="14" fill="#fff" transform="rotate(1 132 152)">КАРАОКЕ</text>
+    <g clip-path="url(#half)">
+      <text x="132" y="82" font-size="62" stroke-width="14" fill="#ffe14d" transform="rotate(-2 132 82)">ПЬЯНОЕ</text>
+      <text x="132" y="152" font-size="62" stroke-width="14" fill="#3dff57" transform="rotate(1 132 152)">КАРАОКЕ</text>
+    </g>
+  </g>
+</svg>

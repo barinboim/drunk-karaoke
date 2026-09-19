@@ -1,0 +1,307 @@
+/* Дешёвый караоке-автомат конца девяностых: Comic Sans, чёрная обводка,
+   зелёная заливка по слогам, мятый стоковый фон не в попад. */
+:root{
+  color-scheme:dark;
+  --ink:#f3f3ef;
+  --dim:#9aa09a;
+  --green:#3dff57;
+  --magenta:#ff4fd8;
+  --yellow:#ffe14d;
+  --panel:#15161a;
+  --edge:#3a3d45;
+  --comic:"Comic Sans MS","Comic Sans","Chalkboard SE","Comic Neue",ui-rounded,system-ui,sans-serif;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:#07070a;color:var(--ink);font-family:var(--comic);display:flex;flex-direction:column}
+button,select,input{font:inherit;color:inherit}
+button{cursor:pointer}
+[hidden]{display:none!important}
+::selection{background:var(--green);color:#000}
+
+/* ---------- чанки-кнопки, как на пульте ---------- */
+.pill{
+  border:2px solid #000;border-radius:10px;
+  background:linear-gradient(#6b7079,#3a3e46 55%,#2a2d34);
+  box-shadow:inset 0 2px 0 rgba(255,255,255,.28),inset 0 -2px 0 rgba(0,0,0,.5),0 3px 0 #000;
+  padding:9px 16px;font-size:14px;font-weight:700;color:#f3f3ef;text-shadow:0 2px 0 rgba(0,0,0,.6);
+}
+.pill:hover{background:linear-gradient(#7d838d,#474c56 55%,#33373f)}
+.pill:active{transform:translateY(2px);box-shadow:inset 0 2px 0 rgba(255,255,255,.2),0 1px 0 #000}
+.pill:disabled{opacity:.45;cursor:default}
+.pill .glyph{color:var(--green)}
+.pill.blue{background:linear-gradient(#63f07a,#1fc23a 55%,#159a2c);color:#06210b;text-shadow:0 1px 0 rgba(255,255,255,.35)}
+.pill.blue .glyph{color:#06210b}
+.pill.dark{background:linear-gradient(#4a4f58,#23262c)}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid var(--yellow);outline-offset:2px}
+
+.round{
+  width:58px;height:58px;flex:0 0 58px;border-radius:50%;
+  border:2px solid #000;color:#06210b;font-size:20px;line-height:1;
+  background:radial-gradient(120% 120% at 50% 0,#9dffae 0,#3dff57 45%,#12b32c 100%);
+  box-shadow:inset 0 3px 0 rgba(255,255,255,.45),0 4px 0 #000;
+}
+.round:active{transform:translateY(2px);box-shadow:inset 0 3px 0 rgba(255,255,255,.3),0 2px 0 #000}
+.round:disabled{opacity:.4;cursor:default}
+
+.panel{background:var(--panel);border:2px solid var(--edge);border-radius:12px;padding:14px 16px;margin-bottom:12px}
+
+/* ---------- верхняя планка ---------- */
+.topbar{
+  display:flex;align-items:center;gap:16px;padding:0 16px;height:42px;flex:0 0 42px;
+  background:linear-gradient(#24262c,#101114);border-bottom:2px solid #000;font-size:12px;
+}
+.clock{font-variant-numeric:tabular-nums;font-size:15px;font-weight:700;color:var(--green)}
+.topbar-brand{border:0;background:none;padding:2px 6px;display:flex;align-items:center;gap:10px}
+.topbar-brand img{height:30px;display:block}
+.topbar-brand i{font-style:normal;font-size:10px;letter-spacing:1px;color:#6f766e}
+.topbar-brand:hover i{color:var(--green)}
+.topbar-brand i{font-style:normal;font-weight:400;color:var(--dim);font-size:10px;letter-spacing:1px}
+.topbar-note{margin-left:auto;color:var(--dim);font-size:11px}
+
+main{flex:1;min-height:0;width:100%;max-width:1180px;margin:0 auto;padding:14px 16px 20px;display:flex;flex-direction:column}
+.screen{flex:1;min-height:0;display:flex;flex-direction:column}
+
+/* ---------- список песен ---------- */
+/* Строка поиска — главный элемент экрана, как на старте поисковика. */
+.searchbar{
+  position:relative;display:flex;align-items:center;gap:12px;
+  margin:10px auto 18px;width:100%;max-width:820px;
+  border:3px solid #000;border-radius:999px;
+  background:linear-gradient(#24272e,#15171b);
+  box-shadow:inset 0 3px 8px rgba(0,0,0,.8),0 4px 0 #000,0 0 0 2px #4a4f58 inset;
+  padding:0 20px;
+}
+.searchbar:focus-within{box-shadow:inset 0 3px 8px rgba(0,0,0,.8),0 4px 0 #000,0 0 0 3px var(--green)}
+.searchbar-icon{font-size:22px;filter:grayscale(.2)}
+.searchbar input{
+  flex:1;min-width:0;border:0;background:none;outline:none;
+  padding:16px 0;font-size:clamp(18px,2.4vw,26px);font-weight:700;color:var(--ink);
+}
+.searchbar input::placeholder{color:#6d7470;font-weight:400}
+.searchbar input::-webkit-search-cancel-button{display:none}
+.searchbar-clear{border:0;background:none;color:var(--dim);font-size:20px;padding:6px}
+.searchbar-clear:hover{color:var(--green)}
+.screen-head{display:flex;align-items:baseline;justify-content:space-between;gap:16px;padding-bottom:10px;border-bottom:3px double var(--edge);margin-bottom:14px}
+.screen-head h1{margin:0;font-size:22px;color:var(--yellow);text-shadow:3px 3px 0 #000}
+.screen-count{font-size:13px;color:var(--dim)}
+.channel-deck{display:flex;align-items:stretch;gap:10px;flex:1;min-height:0}
+.arrow{align-self:center;border:0;background:none;color:var(--green);font-size:32px;padding:8px 2px;text-shadow:2px 2px 0 #000}
+.arrow:hover{color:var(--yellow);transform:scale(1.2)}
+.arrow:disabled{opacity:.2;cursor:default;transform:none}
+.channels{
+  --columns:5;flex:1;min-width:0;display:grid;gap:10px;
+  grid-template-columns:repeat(var(--columns),minmax(0,1fr));
+  grid-template-rows:repeat(3,minmax(88px,1fr));align-content:start;
+}
+.channel{
+  border:2px solid #000;border-radius:8px;background:#1b1d22;padding:0;overflow:hidden;
+  text-align:left;display:flex;flex-direction:column;
+  box-shadow:inset 0 0 0 2px #4a4f58,0 3px 0 #000;
+}
+.channel:hover{box-shadow:inset 0 0 0 2px var(--green),0 3px 0 #000;transform:translateY(-2px)}
+.channel-face{flex:1;min-height:66px;background:#0d0e11 center/cover no-repeat;filter:saturate(1.3) contrast(1.1)}
+.channel-label{flex:0 0 auto;padding:6px 8px 8px;background:linear-gradient(#2a2d34,#1b1d22)}
+.channel-label b{display:block;font-size:12px;line-height:1.2;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.channel-label i{display:block;font-style:normal;font-size:10px;color:var(--dim);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.channel-empty{opacity:.18;pointer-events:none;box-shadow:inset 0 0 0 2px #2a2d34}
+.dots{display:flex;justify-content:center;gap:6px;padding:12px 0 8px;flex-wrap:wrap}
+.dots span{width:10px;height:10px;border-radius:2px;background:#3a3d45;border:1px solid #000;cursor:pointer}
+.dots span.on{background:var(--green)}
+.library-note{text-align:center;color:var(--dim);font-size:12px;margin:0}
+.welcome{max-width:620px;margin:6px auto 0;text-align:center}
+.welcome h2{margin:0 0 10px;font-size:22px;color:var(--yellow);text-shadow:3px 3px 0 #000}
+.welcome p{color:var(--dim);font-size:13px;line-height:1.6;margin:0 0 16px}
+.welcome b{color:var(--ink)}
+.welcome-note{font-size:11px!important;margin-top:16px!important}
+.file-pill.big{display:inline-block;font-size:15px;padding:14px 28px}
+
+/* ---------- телевизор ---------- */
+/* Телевизор слева, пульт записи справа: всё помещается в один экран без прокрутки. */
+.stage-layout{display:flex;gap:12px;flex:1;min-height:0;margin-bottom:12px}
+.tv{
+  position:relative;flex:1;min-width:0;min-height:260px;overflow:hidden;
+  border:3px solid #000;border-radius:6px;background:#000;
+  box-shadow:inset 0 0 90px rgba(0,0,0,.9),0 4px 0 #000;
+}
+.backdrop{position:absolute;inset:-4%;background:#111 center/cover no-repeat;filter:saturate(1.2) contrast(1.05)}
+.backdrop.zoom{animation:kenburns 26s linear infinite alternate}
+@keyframes kenburns{0%{transform:scale(1) translate(0,0)}100%{transform:scale(1.16) translate(-2%,-2%)}}
+.backdrop.fade{animation:dissolve 1.2s ease-in-out}
+@keyframes dissolve{0%{opacity:0;filter:blur(8px) brightness(1.6)}100%{opacity:1;filter:none}}
+.grain{position:absolute;inset:0;pointer-events:none;opacity:.10;mix-blend-mode:overlay;background-image:radial-gradient(#fff 1px,transparent 1px);background-size:3px 3px}
+.scanlines{position:absolute;inset:0;pointer-events:none;opacity:.30;background:repeating-linear-gradient(rgba(0,0,0,0) 0 2px,rgba(0,0,0,.65) 2px 4px)}
+.tv-head,.tv-foot{position:absolute;left:0;right:0;display:flex;align-items:center;justify-content:space-between;gap:14px;padding:12px 18px;z-index:3;
+  color:#eef2e6;text-shadow:2px 2px 0 #000,0 0 10px rgba(0,0,0,.9)}
+.tv-head{top:0;font-size:clamp(15px,1.5vw,21px)}
+.tv-foot{bottom:0;font-size:clamp(12px,1.15vw,16px);color:#cfd6c6}
+.tv-title{font-weight:700;color:var(--yellow);letter-spacing:.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:66%}
+.tv-badge{border:2px solid #000;border-radius:8px;background:linear-gradient(#63f07a,#12b32c);color:#06210b;
+  padding:4px 14px;font-weight:700;font-size:clamp(13px,1.3vw,18px);text-shadow:none;white-space:nowrap}
+.tv-foot #corpusBadge{color:var(--yellow);font-weight:700}
+.tv-foot #fit{text-align:right}
+
+.tv-text{position:absolute;left:0;right:0;bottom:11%;z-index:2;text-align:center;padding:0 3%}
+.cue{margin:0 0 8px;font-size:13px;color:#e8ecdf;text-shadow:2px 2px 0 #000}
+.lyric{
+  font-size:clamp(24px,4.2vw,54px);line-height:1.15;font-weight:700;
+  max-width:1000px;margin:0 auto;overflow-wrap:break-word;
+  filter:drop-shadow(3px 0 0 #000) drop-shadow(-3px 0 0 #000) drop-shadow(0 3px 0 #000)
+         drop-shadow(0 -3px 0 #000) drop-shadow(2px 2px 0 #000) drop-shadow(-2px -2px 0 #000)
+         drop-shadow(0 6px 5px rgba(0,0,0,.9));
+}
+.lyric .item{display:inline-block;max-width:100%}
+.lyric .item+.item::before{content:"\00b7";margin:0 .3em;color:#fff}
+.lyric .word{white-space:nowrap}
+/* заливка идёт слева направо прямо по букве — как на кассетном караоке */
+.syllable{
+  --p:0%;
+  background-image:linear-gradient(90deg,var(--green) 0,var(--green) var(--p),#fff var(--p),#fff 100%);
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+}
+.syllable.sung{--p:100%}
+.original{margin:12px auto 0;max-width:820px;font-size:clamp(12px,1.4vw,16px);color:#7f867a;
+  filter:drop-shadow(2px 0 0 #000) drop-shadow(-2px 0 0 #000) drop-shadow(0 2px 0 #000) drop-shadow(0 -2px 0 #000)}
+/* Иерархия строк: поём — белым с зелёной заливкой, следом — тусклее и желтее,
+   а как было в песне — серым в самом низу, чтобы не спорило за внимание. */
+.next-line{margin:8px auto 0;max-width:900px;font-size:clamp(15px,2.1vw,27px);font-weight:700;color:#d9b83f;
+  filter:drop-shadow(2px 0 0 #000) drop-shadow(-2px 0 0 #000) drop-shadow(0 2px 0 #000) drop-shadow(0 -2px 0 #000)}
+
+.countdown{
+  position:absolute;inset:0;z-index:4;display:flex;align-items:center;justify-content:center;
+  font-size:clamp(80px,18vw,220px);font-weight:700;color:var(--yellow);
+  filter:drop-shadow(5px 0 0 #000) drop-shadow(-5px 0 0 #000) drop-shadow(0 5px 0 #000) drop-shadow(0 -5px 0 #000);
+  animation:pop .9s ease-out;
+}
+@keyframes pop{0%{transform:scale(2.2);opacity:0}30%{transform:scale(1);opacity:1}100%{transform:scale(.9);opacity:.85}}
+
+/* ---------- транспорт ---------- */
+.transport{display:flex;align-items:center;gap:16px}
+.track{flex:1;min-width:80px}
+.track-label{display:flex;justify-content:space-between;gap:10px;font-size:12px;margin-bottom:6px}
+.track-label strong{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#time{font-variant-numeric:tabular-nums;color:var(--dim);white-space:nowrap}
+#time i{font-style:normal;color:#666b63}
+.timeline{position:relative;height:16px;border:2px solid #000;border-radius:8px;background:#0d0e11;box-shadow:inset 0 2px 5px rgba(0,0,0,.8);overflow:hidden}
+#progress{position:absolute;inset:0 auto 0 0;width:0;background:linear-gradient(#9dffae,#12b32c)}
+.timeline input{position:absolute;inset:0;width:100%;height:100%;margin:0;opacity:0;cursor:pointer}
+.volume{display:flex;align-items:center;gap:8px;font-size:11px;color:var(--dim);white-space:nowrap}
+.volume input{width:86px;accent-color:var(--green)}
+.volume output{color:var(--yellow);font-weight:700;font-variant-numeric:tabular-nums;min-width:34px}
+
+.leave{display:flex;justify-content:center;padding:6px 0 4px;flex:0 0 auto}
+.pill.huge{font-size:18px;padding:14px 38px;border-radius:14px}
+
+/* Выбор режима сразу при клике на песню — чтобы в игре этих кнопок уже не было. */
+.picker{position:fixed;inset:0;z-index:50;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.78);padding:20px}
+.picker-box{width:100%;max-width:420px;background:var(--panel);border:3px solid #000;border-radius:14px;box-shadow:0 6px 0 #000;padding:18px}
+.picker-title{margin:0 0 14px;font-size:17px;font-weight:700;color:var(--yellow);text-align:center;line-height:1.3}
+.picker-choice{
+  display:block;width:100%;text-align:left;margin-bottom:9px;
+  border:2px solid #000;border-radius:11px;padding:12px 15px;
+  background:linear-gradient(#3a3e46,#23262c);color:var(--ink);
+  box-shadow:inset 0 2px 0 rgba(255,255,255,.16),0 3px 0 #000;
+}
+.picker-choice:hover{background:linear-gradient(#63f07a,#12b32c);color:#06210b}
+.picker-choice:hover small{color:#0b3d15}
+.picker-choice b{display:block;font-size:15px}
+.picker-choice small{display:block;margin-top:3px;font-size:11px;color:var(--dim)}
+.picker-field{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px;font-size:12px;color:var(--dim)}
+.picker-field select{flex:1;min-width:0;border:2px solid #000;border-radius:9px;background:linear-gradient(#3a3e46,#23262c);padding:9px 11px;font-size:13px;font-weight:700;color:var(--ink)}
+.picker-mic{border-top:2px dashed var(--edge);border-bottom:2px dashed var(--edge);padding:12px 0;margin:0 0 14px}
+.picker-mic .pill{width:100%;padding:9px;font-size:12px}
+.picker-note{margin:8px 0 0;font-size:11px;color:var(--dim);line-height:1.4}
+.picker-note.ok{color:var(--green)}
+.picker-field.check{justify-content:flex-start;gap:8px}
+.save-bar{height:12px;border:2px solid #000;border-radius:7px;background:#0d0e11;overflow:hidden;margin:10px 0 14px}
+.save-bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,#12b32c,#9dffae);transition:width .2s}
+.picker-cancel{width:100%;border:0;background:none;color:var(--dim);font-size:12px;padding:8px}
+.picker-cancel:hover{color:var(--ink)}
+
+/* ---------- строки настроек и панелей ---------- */
+.row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px;flex:0 0 auto}
+.field{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--dim)}
+.field select{border:2px solid #000;border-radius:8px;background:linear-gradient(#3a3e46,#23262c);padding:8px 12px;font-size:13px;font-weight:700;color:var(--ink)}
+.field input[type=range]{accent-color:var(--green)}
+.settings{display:flex;flex-wrap:wrap;gap:16px;align-items:center}
+.settings output{font-variant-numeric:tabular-nums;min-width:52px}
+.imports{display:flex;gap:10px;flex-wrap:wrap;align-items:center;width:100%;padding-top:12px;border-top:2px dashed var(--edge)}
+.imports>span{font-size:11px;color:var(--dim)}
+.file-pill{position:relative;overflow:hidden;border:2px solid #000;border-radius:10px;background:linear-gradient(#6b7079,#3a3e46 55%,#2a2d34);padding:8px 14px;font-size:12px;font-weight:700;cursor:pointer;box-shadow:inset 0 2px 0 rgba(255,255,255,.25),0 3px 0 #000}
+.file-pill input{position:absolute;inset:0;width:100%;opacity:0;cursor:pointer}
+
+.panel-head{display:flex;justify-content:space-between;align-items:baseline;gap:14px;padding-bottom:10px;border-bottom:2px dashed var(--edge)}
+.panel-head h2{margin:0;font-size:19px;color:var(--yellow)}
+.panel-head span{font-size:11px;color:var(--dim)}
+.method{color:var(--dim);font-size:12.5px;line-height:1.55;max-width:820px}
+.method b{color:var(--ink)}
+details{font-size:12px;color:var(--dim);line-height:1.55}
+details summary{cursor:pointer;color:var(--green);font-weight:700}
+#allLines{list-style:none;padding:0;margin:12px 0;display:grid;grid-template-columns:1fr 1fr;gap:0 22px}
+#allLines button{display:flex;align-items:baseline;gap:12px;width:100%;text-align:left;background:none;border:0;border-bottom:1px dashed var(--edge);padding:9px 4px;font-size:13px;line-height:1.4;color:var(--ink)}
+#allLines button:hover{color:var(--green)}
+#allLines small{flex:0 0 34px;font-size:10px;color:var(--dim);font-variant-numeric:tabular-nums}
+#allLines .repeat{flex:0 0 auto;color:var(--green);font-size:11px}
+#allLines li{display:flex;align-items:stretch;gap:6px}
+#allLines .hear{flex:0 0 auto;border:2px solid #000;border-radius:8px;background:linear-gradient(#6b7079,#2a2d34);
+  color:var(--yellow);font-size:13px;padding:0 9px;margin:4px 0 6px;align-self:center}
+#allLines .hear:hover{background:linear-gradient(#7d838d,#33373f)}
+#allLines .hear.on{background:linear-gradient(#63f07a,#12b32c);color:#06210b}
+/* ---------- студия: пульт записи ---------- */
+.studio{
+  flex:0 0 330px;display:flex;flex-direction:column;gap:10px;min-height:0;
+  background:var(--panel);border:2px solid var(--edge);border-radius:12px;padding:12px;
+}
+.studio-top{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.studio-modes{display:flex;gap:6px}
+.mode{
+  border:2px solid #000;border-radius:9px;padding:7px 11px;font-size:12px;font-weight:700;
+  background:linear-gradient(#3a3e46,#23262c);color:#c9cfc4;
+  box-shadow:inset 0 2px 0 rgba(255,255,255,.14),0 2px 0 #000;
+}
+.mode:hover{color:var(--ink)}
+.mode.on{background:linear-gradient(#63f07a,#12b32c);color:#06210b;text-shadow:0 1px 0 rgba(255,255,255,.35)}
+#studioCount{color:var(--yellow);font-weight:700;font-size:11px;white-space:nowrap}
+.phrase{border:2px solid #000;border-radius:10px;background:#0f1013;padding:10px 12px}
+.phrase-nav{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:11px;color:var(--dim);margin-bottom:8px}
+.stepper{border:2px solid #000;border-radius:7px;background:linear-gradient(#4a4f58,#23262c);color:var(--green);font-size:13px;padding:2px 11px}
+.stepper:disabled{opacity:.3;cursor:default}
+.phrase-new{margin:0;font-size:16px;font-weight:700;line-height:1.3;color:var(--ink)}
+.phrase-old{margin:6px 0 0;font-size:12px;line-height:1.35;color:#7f867a}
+.meter{height:10px;border:2px solid #000;border-radius:6px;background:#0d0e11;overflow:hidden;flex:0 0 auto}
+.meter i{display:block;height:100%;width:0;background:linear-gradient(90deg,#12b32c,#9dffae)}
+.studio-buttons{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.studio-buttons .pill{padding:9px 8px;font-size:12px}
+.studio-buttons #studioDrop{grid-column:span 1}
+.pill.rec{background:linear-gradient(#ff8c8c,#d22 55%,#a41818);color:#fff}
+.studio-hint{margin:0;font-size:11px;color:var(--dim);line-height:1.4}
+.take-list{list-style:none;margin:0;padding:0;flex:1;min-height:60px;overflow-y:auto;border:2px solid #000;border-radius:10px;background:#0f1013}
+.take{
+  display:flex;align-items:baseline;gap:9px;width:100%;text-align:left;
+  background:none;border:0;border-bottom:1px dashed var(--edge);padding:7px 8px;
+  font-size:12px;line-height:1.3;color:var(--ink);
+}
+.take:hover{background:#1e2128}
+.take.on{background:#22301f;color:#fff;box-shadow:inset 3px 0 0 var(--green)}
+.take.done small{color:var(--green)}
+.take small{flex:0 0 30px;font-size:9px;color:var(--dim);font-variant-numeric:tabular-nums}
+.take span{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.take b{flex:0 0 14px;color:var(--green)}
+.error{border-color:#c06a35;background:#2a1a12;color:#ffbe8e}
+
+@media(max-width:1000px){
+  .stage-layout{flex-direction:column}
+  .studio{flex:0 0 auto;max-height:44vh}
+  .take-list{max-height:150px}
+}
+@media(max-width:900px){.channels{--columns:3}#allLines{grid-template-columns:1fr}}
+@media(max-width:620px){
+  main{padding:10px 10px 16px}
+  .channels{--columns:2;gap:8px}
+  .searchbar{padding:0 14px;gap:8px}
+  .searchbar input{font-size:17px;padding:12px 0}
+  .topbar{gap:10px;padding:0 10px}.topbar-brand i{display:none}
+  .transport{flex-wrap:wrap;gap:12px}.volume{display:none}
+  .lyric{filter:drop-shadow(2px 0 0 #000) drop-shadow(-2px 0 0 #000) drop-shadow(0 2px 0 #000) drop-shadow(0 -2px 0 #000)}
+  .tv-foot #fit{display:none}
+}
