@@ -10,6 +10,15 @@ const CORPORA={
   ali:{file:'data/ali.txt',name:'Товары с маркетплейса'},
   pills:{file:'data/pills.txt',name:'Инструкция к лекарству'},
   ads:{file:'data/ads.txt',name:'Доска объявлений'},
+  terms:{file:'data/terms.txt',name:'Пользовательское соглашение'},
+  utility:{file:'data/utility.txt',name:'Квитанция ЖКХ и подъезд'},
+  seeds:{file:'data/seeds.txt',name:'Каталог семян и рассады'},
+  label:{file:'data/label.txt',name:'Состав на этикетке'},
+  weather:{file:'data/weather.txt',name:'Прогноз погоды и пробки'},
+  spam:{file:'data/spam.txt',name:'Спам и мошенники'},
+  transit:{file:'data/transit.txt',name:'Объявления в транспорте'},
+  system:{file:'data/system.txt',name:'Уведомления и ошибки'},
+  recipes:{file:'data/recipes.txt',name:'Рецепты'},
   menu:{file:'data/menu.txt',name:'Меню ресторанов'},
 };
 
