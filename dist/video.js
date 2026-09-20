@@ -86,6 +86,35 @@ function focusOf(image,aspect){
   }catch{return middle;}
 }
 
+/**
+ * Где внутри картинки собственно рисунок. В логотипе справа и снизу остаётся пустое поле
+ * (надпись кончается примерно на 420-й координате из 660), и если ставить по центру сам
+ * холст картинки, надпись уезжает влево. Границы считаем по прозрачности, а не по разметке
+ * SVG: шрифт на разных машинах разной ширины, и жёстко заданные числа однажды соврут.
+ */
+function inkBounds(image){
+  const whole={x:.5,y:.5,width:1,height:1};
+  try{
+    const w=240,h=Math.max(8,Math.round(240*image.height/image.width));
+    const probe=document.createElement('canvas');
+    probe.width=w;probe.height=h;
+    const paint=probe.getContext('2d',{willReadFrequently:true});
+    paint.drawImage(image,0,0,w,h);
+    const data=paint.getImageData(0,0,w,h).data;
+    let left=w,right=-1,top=h,bottom=-1;
+    for(let y=0;y<h;y++)for(let x=0;x<w;x++){
+      if(data[(y*w+x)*4+3]<12)continue;
+      if(x<left)left=x;
+      if(x>right)right=x;
+      if(y<top)top=y;
+      if(y>bottom)bottom=y;
+    }
+    if(right<left||bottom<top)return whole;
+    return {x:(left+right+1)/2/w,y:(top+bottom+1)/2/h,
+            width:(right-left+1)/w,height:(bottom-top+1)/h};
+  }catch{return whole;}
+}
+
 /** Вписывает «по большей стороне», как background-size: cover, но вокруг точки интереса. */
 function drawCover(ctx,image,width,height,zoom,focus){
   if(!image){ctx.fillStyle='#111';ctx.fillRect(0,0,width,height);return;}
@@ -101,19 +130,21 @@ function drawCover(ctx,image,width,height,zoom,focus){
  * Сетка старого экрана — не полосы, а точечная матрица: кадр виден сквозь круглые точки,
  * между ними чуть притемнено. Мягко, потому что край точки размыт градиентом, а не обрезан.
  * Плитка строится один раз и повторяется узором: заливать узором целый кадр дешевле, чем
- * рисовать десятки тысяч точек покадрово. Размер и плотность подобраны замером: сорок пять
- * точек по высоте кадра, среднее затемнение 10.5% — заметно светлее прежних полос (16.6%),
- * которые к тому же были жёсткими и слишком тёмными.
+ * рисовать десятки тысяч точек покадрово.
+ *
+ * Размер проверять только на кадре в натуральную величину. Уменьшенная копия усредняет
+ * точки в ровную дымку, и сетка кажется мягче и мельче, чем она есть: на этом уже
+ * ошиблись — выбрали по превью ячейку вдвое крупнее нужной.
  */
 function dotMask(ctx,height){
-  const cell=Math.max(12,Math.round(height/45));
+  const cell=Math.max(8,Math.round(height/90));
   const tile=document.createElement('canvas');
   tile.width=tile.height=cell;
   const paint=tile.getContext('2d');
   const glow=paint.createRadialGradient(cell/2,cell/2,0,cell/2,cell/2,cell*.72);
   glow.addColorStop(0,'rgba(0,0,0,0)');
-  glow.addColorStop(.40,'rgba(0,0,0,0)');
-  glow.addColorStop(1,'rgba(0,0,0,1)');
+  glow.addColorStop(.42,'rgba(0,0,0,0)');
+  glow.addColorStop(1,'rgba(0,0,0,.85)');
   paint.fillStyle=glow;paint.fillRect(0,0,cell,cell);
   return ctx.createPattern(tile,'repeat');
 }
@@ -121,7 +152,7 @@ function dotMask(ctx,height){
 function dots(ctx,pattern,width,height){
   if(!pattern)return;
   ctx.save();
-  ctx.globalAlpha=.38;ctx.fillStyle=pattern;
+  ctx.globalAlpha=.22;ctx.fillStyle=pattern;
   ctx.fillRect(0,0,width,height);
   ctx.restore();
 }
@@ -230,6 +261,7 @@ export async function renderVideo({
   const images=(await Promise.all(shuffle(backdrops).slice(0,24).map(loadImage))).filter(Boolean);
   const focus=images.map(image=>focusOf(image,width/height));
   const logo=await loadImage('logo.svg');
+  const ink=logo?inkBounds(logo):null;
   const audio=new AudioContext();
   if(audio.state==='suspended')await audio.resume();
   const source=audio.createBufferSource();
@@ -308,13 +340,15 @@ export async function renderVideo({
       ctx.textAlign='center';
       let top=safeTop;
       if(logo){
-        const logoWidth=Math.round(Math.min(column*.66,width*(shape==='16:9'?.30:.52)));
+        // Масштабируем так, чтобы заданную ширину занял рисунок, а не холст с пустым полем.
+        const want=Math.min(column*.62,width*(shape==='16:9'?.28:.52));
+        const logoWidth=Math.round(want/Math.max(.25,ink.width));
         const logoHeight=logoWidth*logo.height/logo.width;
-        ctx.drawImage(logo,(width-logoWidth)/2,top,logoWidth,logoHeight);
-        top+=logoHeight;
+        ctx.drawImage(logo,width/2-logoWidth*ink.x,top,logoWidth,logoHeight);
+        top+=logoHeight*(ink.y+ink.height/2);
       }
       ctx.font=`${siteSize}px ${FONT}`;
-      top+=siteSize*1.35;
+      top+=siteSize*1.6;
       drawOutlined(ctx,'drunkaraoke.barinbo.im',width/2,top,Math.max(3,siteSize*.16),'#cfd6c6');
       if(title){
         // Длинное название сперва ужимаем кеглем и только потом, если не помогло, режем.
@@ -326,7 +360,8 @@ export async function renderVideo({
         let shown=title;
         while(shown.length>6&&ctx.measureText(shown).width>column)shown=shown.slice(0,-2);
         if(shown!==title)shown=shown.trimEnd()+'…';
-        top+=size*1.32;
+        // Название песни не должно липнуть к адресу: между строками полтора кегля воздуха.
+        top+=size*1.75;
         drawOutlined(ctx,shown,width/2,top,Math.max(6,size*.2),'#ffe14d');
       }
 
