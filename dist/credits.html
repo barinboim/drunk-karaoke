@@ -24,6 +24,15 @@
     <ol id="list" class="method" style="max-width:none;line-height:1.7"></ol>
   </div>
 </main>
+<footer class="sitefoot">
+  <a href="./">На главную</a>
+  <span>·</span>
+  <button type="button" class="linkish" data-feedback>Сообщить о проблеме</button>
+</footer>
+<script type="module">
+  import {initFeedback} from './feedback.js';
+  initFeedback(()=>({'экран':'страница источников'}));
+</script>
 <script type="module">
 const list=document.getElementById('list');
 try{

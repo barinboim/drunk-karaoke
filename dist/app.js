@@ -1,6 +1,7 @@
 import {positionAt,originalVersion,parseCorpusFile} from './engine.js';
 import {parseUltraStar} from './ultrastar.js';
 import {Studio} from './studio.js';
+import {initFeedback,noteStep} from './feedback.js';
 
 const $=id=>document.getElementById(id);
 const audio=$('audio');
@@ -26,7 +27,10 @@ const compute=payload=>new Promise((resolve,reject)=>{const id=++requestId;pendi
 
 /* ---------- small helpers ---------- */
 const time=t=>`${Math.floor(Math.max(0,t)/60)}:${String(Math.floor(Math.max(0,t)%60)).padStart(2,'0')}`;
-const fail=error=>{$('error').textContent=error.message||String(error);$('error').hidden=false;};
+const fail=error=>{
+  $('error').textContent=error.message||String(error);$('error').hidden=false;
+  noteStep(`ошибка: ${error.message||error}`);
+};
 const clearError=()=>{$('error').hidden=true;};
 const busy=value=>{for(const id of ['shuffle','corpus','corpusFile','songFiles'])$(id).disabled=value;$('shuffle').innerHTML=value?'Подбираем…':'<span class="glyph">⟳</span> Пересобрать';};
 async function read(url,type='text'){
@@ -83,6 +87,7 @@ function renderChannels(){
 function showScreen(name){
   $('libraryScreen').hidden=name!=='library';
   $('stageScreen').hidden=name!=='stage';
+  noteStep(`экран: ${name}`);
 }
 
 /* ---------- loading a song ---------- */
@@ -556,6 +561,21 @@ const studio=new Studio({
   song:()=>song,entry:()=>entry,version:()=>version,
   backdrops:()=>(stock.length?stock:backdrops),
 });
+
+/* ---------- обратная связь ---------- */
+// Форма сама снимет состояние игры в момент отправки: спрашивать у человека,
+// какая была песня и какой корпус, бессмысленно — он уже нажал «пересобрать».
+initFeedback(()=>({
+  'песня':entry?`${entry.artist||''} — ${entry.title||''}`.trim():'не выбрана',
+  'корпус':corpusName||corpusKey||'—',
+  'строк':song?song.lines.length:undefined,
+  'язык песни':song?.language,
+  'версия подбора':seed,
+  'смещение':offset||undefined,
+  'экран':$('stageScreen').hidden?'выбор песни':'сцена',
+  'режим студии':studio?.mode,
+  'дорожка':vocalOn?'вокал':'минусовка',
+}));
 
 /* ---------- boot ---------- */
 (function frame(){update();studio.tick(audio.currentTime);requestAnimationFrame(frame);})();
