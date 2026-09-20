@@ -56,7 +56,9 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid 
 .topbar-brand i{font-style:normal;font-size:10px;letter-spacing:1px;color:#6f766e}
 .topbar-brand:hover i{color:var(--green)}
 .topbar-brand i{font-style:normal;font-weight:400;color:var(--dim);font-size:10px;letter-spacing:1px}
-.topbar-note{margin-left:auto;color:var(--dim);font-size:11px}
+.topbar-note{margin-left:auto;color:var(--dim);font-size:11px;white-space:nowrap}
+.topbar-note a{color:#9aa39a;font-weight:700;text-decoration:none;border-bottom:1px dotted #6f766e}
+.topbar-note a:hover{color:var(--green);border-bottom-color:var(--green)}
 
 main{flex:1;min-height:0;width:100%;max-width:1180px;margin:0 auto;padding:14px 16px 20px;display:flex;flex-direction:column}
 .screen{flex:1;min-height:0;display:flex;flex-direction:column}
@@ -108,7 +110,9 @@ main{flex:1;min-height:0;width:100%;max-width:1180px;margin:0 auto;padding:14px 
 .dots span{width:10px;height:10px;border-radius:2px;background:#3a3d45;border:1px solid #000;cursor:pointer}
 .dots span.on{background:var(--green)}
 .library-note{text-align:center;color:var(--dim);font-size:12px;margin:0}
-.welcome{max-width:620px;margin:6px auto 0;text-align:center}
+/* Блок «принеси свою песню» виден всегда, а не только при пустой библиотеке: своя разметка
+   пригождается и тогда, когда на сайте уже есть песни. Линия сверху отделяет его от полок. */
+.welcome{max-width:620px;margin:30px auto 0;padding-top:22px;border-top:1px solid rgba(255,255,255,.09);text-align:center}
 .welcome h2{margin:0 0 10px;font-size:22px;color:var(--yellow);text-shadow:3px 3px 0 #000}
 .welcome p{color:var(--dim);font-size:13px;line-height:1.6;margin:0 0 16px}
 .welcome b{color:var(--ink)}
@@ -339,6 +343,7 @@ details summary{cursor:pointer;color:var(--green);font-weight:700}
   .searchbar{padding:0 14px;gap:8px}
   .searchbar input{font-size:17px;padding:12px 0}
   .topbar{gap:10px;padding:0 10px}.topbar-brand i{display:none}
+  .topbar-note{font-size:10px}
   .transport{flex-wrap:wrap;gap:12px}.volume{display:none}
   .lyric{filter:drop-shadow(2px 0 0 #000) drop-shadow(-2px 0 0 #000) drop-shadow(0 2px 0 #000) drop-shadow(0 -2px 0 #000)}
   .tv-foot #fit{display:none}

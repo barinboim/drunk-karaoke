@@ -586,7 +586,7 @@ try{
   applyFilter();
   showScreen('library');
   // Библиотеки нет — значит это опубликованная версия: зовём принести свою песню.
-  $('welcome').hidden=library.length>0;
+  // Блок со своей разметкой остаётся на месте и когда библиотека не пуста.
   if(!library.length){$('libraryNote').textContent='';$('screenCount').textContent='';}
 }catch(error){
   fail(error);

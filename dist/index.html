@@ -11,6 +11,7 @@
 
 <div class="topbar">
   <button class="topbar-brand" id="brandHome" title="На главную"><img src="logo.svg" alt="Пьяное караоке"><i>drunkaraoke.barinbo.im</i></button>
+  <span class="topbar-note">проект <a href="https://school.barinbo.im" target="_blank" rel="noopener">школы Баринбойма</a></span>
 </div>
 
 <main>
@@ -33,14 +34,14 @@
   <div class="dots" id="pageDots"></div>
   <p class="library-note" id="libraryNote">Читаем список песен…</p>
 
-  <div id="welcome" class="welcome" hidden>
+  <div id="welcome" class="welcome">
     <h2>Принеси свою песню</h2>
-    <p>Нужны два файла с твоего компьютера: караоке-разметка <b>UltraStar&nbsp;.txt</b> с послоговым
-    таймингом и аудио к ней — лучше минусовка. Ничего никуда не загружается: разбор, подбор слов,
-    запись и сведение целиком происходят в этой вкладке.</p>
+    <p>Нужны два файла: караоке-разметка <b>UltraStar&nbsp;.txt</b> с послоговым таймингом и аудио
+    к ней — лучше минусовка. Файлы остаются у тебя на компьютере: разбор, подбор слов, запись
+    и сведение происходят прямо в этой вкладке.</p>
     <label class="file-pill big">Выбрать .txt и аудио<input id="welcomeFiles" type="file" accept=".txt,.mp3,.ogg,.wav,.m4a" multiple></label>
-    <p class="welcome-note">Песни здесь не раздаются: фонограммы и тексты принадлежат их авторам.
-    Локальная версия умеет индексировать целую папку с караоке — см. README в репозитории.</p>
+    <p class="welcome-note">Локальная версия умеет подхватить целую папку с караоке — как это
+    включить, написано в README.</p>
   </div>
 </section>
 
