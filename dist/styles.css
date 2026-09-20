@@ -142,7 +142,23 @@ main{flex:1;min-height:0;width:100%;max-width:1180px;margin:0 auto;padding:14px 
 .tv-foot #fit{text-align:right}
 
 .tv-text{position:absolute;left:0;right:0;bottom:11%;z-index:2;text-align:center;padding:0 3%}
-.cue{margin:0 0 8px;font-size:13px;color:#e8ecdf;text-shadow:2px 2px 0 #000}
+/* Подсказка о вступлении была тринадцатым кеглем — поющий её просто не замечал. */
+.cue{margin:0 0 10px;font-size:clamp(18px,2.2vw,32px);font-weight:700;color:#e8ecdf;
+  text-shadow:3px 3px 0 #000,-2px -2px 0 #000,2px -2px 0 #000,-2px 2px 0 #000}
+/* Последние секунды перед строкой: кружки закрашиваются слева направо, по одному в секунду.
+   Это видно краем глаза, пока читаешь текст, а строчка с цифрой — нет. */
+.cue-dots{display:flex;gap:clamp(10px,1.4vw,22px);justify-content:center;margin:0 0 12px}
+.cue-dots span{
+  width:clamp(26px,3.6vw,52px);aspect-ratio:1;border-radius:50%;
+  border:4px solid #000;background:rgba(0,0,0,.42);
+  display:grid;place-items:center;box-shadow:0 3px 0 rgba(0,0,0,.85);
+}
+.cue-dots i{
+  width:100%;height:100%;border-radius:50%;
+  background:linear-gradient(#9dffae,#3dff57 55%,#12b32c);
+  transform:scale(var(--fill,0));
+}
+.cue-dots span.full{box-shadow:0 0 0 5px rgba(61,255,87,.38),0 3px 0 rgba(0,0,0,.85)}
 .lyric{
   font-size:clamp(24px,4.2vw,54px);line-height:1.15;font-weight:700;
   max-width:1000px;margin:0 auto;overflow-wrap:break-word;

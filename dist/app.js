@@ -233,6 +233,21 @@ function stepBackdrop(now){
 /* ---------- stage rendering ---------- */
 // Accent marks steer the matching; on stage they are noise, so they are stripped for reading only.
 const plain=value=>value.replace(/\u0301/g,'');
+
+// Кружки вступления. Четыре штуки на четыре секунды — ровно как счёт «раз-два-три-четыре»,
+// поэтому закрашивание читается как темп, а не просто как убывающий остаток.
+const CUE_LEAD=4;
+let cueDots=null;
+function cueRow(){
+  if(cueDots)return cueDots;
+  cueDots=Array.from({length:CUE_LEAD},()=>{
+    const dot=document.createElement('span');
+    dot.append(document.createElement('i'));
+    return dot;
+  });
+  $('cueDots').append(...cueDots);
+  return cueDots;
+}
 function renderSyllables(index){
   const line=version[index],holder=$('lyric');
   holder.replaceChildren();
@@ -305,9 +320,21 @@ function update(){
     $('nextLine').textContent=showNext&&next>=0?plain(version[next].text):'';
     $('nextLine').hidden=!showNext||next<0;
   }
-  const wait=state.active<0&&display>=0?Math.max(0,Math.ceil(song.lines[display].start-clockTime)):0;
+  const gap=state.active<0&&display>=0?song.lines[display].start-clockTime:-1;
+  const counting=!finished&&gap>0&&gap<=CUE_LEAD;
   $('phase').textContent=finished?'ГОТОВО':state.active>=0?'ПОЁМ':display===0?'ВСТУПЛЕНИЕ':'ПРОИГРЫШ';
-  $('cue').textContent=finished?'':state.active>=0?'':wait>0?`вступай через ${wait} с`:'';
+  // Долгий проигрыш — цифрой, последние секунды — кружками: цифра там меняется слишком
+  // редко, чтобы по ней поймать момент.
+  $('cue').textContent=finished||state.active>=0||gap<=CUE_LEAD?'':`вступай через ${Math.ceil(gap)} с`;
+  $('cueDots').hidden=!counting;
+  if(counting){
+    const done=CUE_LEAD-gap;   // один кружок — одна секунда
+    cueRow().forEach((dot,index)=>{
+      const fill=Math.max(0,Math.min(1,done-index));
+      dot.style.setProperty('--fill',fill.toFixed(3));
+      dot.classList.toggle('full',fill>=1);
+    });
+  }
   $('lineCount').textContent=finished?`${song.lines.length} / ${song.lines.length}`:`СТРОКА ${display+1} / ${song.lines.length}`;
   // Внизу справа только то, что нужно поющему: припев ли это и сколько осталось.
   const left=Math.max(0,(audio.duration||song.duration)-current);
