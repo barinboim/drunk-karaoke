@@ -2,6 +2,14 @@
 import {splitSyllables} from './engine.js';
 const VOWEL=/[аеёиоуыэюяaeiouy]/i;
 const CONFUSABLE={a:'а',e:'е',o:'о',p:'р',c:'с',y:'у',x:'х',k:'к',A:'А',B:'В',C:'С',E:'Е',H:'Н',K:'К',M:'М',O:'О',P:'Р',T:'Т',X:'Х'};
+const languageCode=value=>{
+  const text=String(value||'').toLowerCase();
+  if(/fran|french|français|francais/.test(text))return 'fr';
+  if(/germ|deutsch/.test(text))return 'de';
+  if(/engl|english/.test(text))return 'en';
+  if(/rus|рус/.test(text))return 'ru';
+  return '';
+};
 // Charts typed on mixed keyboards hide Latin look-alikes inside Cyrillic words.
 const healLatin=value=>/[а-яё]/i.test(value)?value.replace(/[a-zA-Z]/g,c=>CONFUSABLE[c]??c):value;
 const vowels=value=>(value.match(/[аеёиоуыэюя]/gi)||[]).length;
@@ -72,7 +80,7 @@ function toSlots(notes,language='ru') {
   if(prefix&&merged.length){const last=merged.at(-1);last.text+=prefix.text;last.length=Math.max(last.length,prefix.beat+prefix.length-last.beat);}
   const slots=[];
   for(const note of merged) {
-    const count=language==='en'?1:vowels(note.text);
+    const count=language==='ru'?vowels(note.text):1;
     if(count<2){slots.push(note);continue;}
     const lead=note.text.match(/^\s*/)[0],body=note.text.slice(lead.length);
     const parts=splitSyllables(body),weights=parts.map(p=>Math.max(1,p.length)),total=weights.reduce((a,b)=>a+b,0);
@@ -98,7 +106,7 @@ export function parseUltraStar(text,{voice='merge'}={}) {
   const body=[...players.values()].flat(2).map(n=>n.text).join('');
   // Английская разметка размечена по слогам сразу, поэтому ноты не дробим:
   // в написании гласных больше, чем слогов («through» — одна нота, три гласные буквы).
-  const language=(body.match(/[a-z]/gi)||[]).length>(body.match(/[а-яё]/gi)||[]).length?'en':'ru';
+  const language=languageCode(headers.LANGUAGE)||((body.match(/[a-z]/gi)||[]).length>(body.match(/[а-яё]/gi)||[]).length?'en':'ru');
   const voices=[...players.entries()].sort((a,b)=>a[0]-b[0]);
   if(!voices.length)throw Error('В файле нет нот.');
   const wanted=voice==='merge'?voices:voices.filter(([id])=>id===Number(voice)||voices.length===1);

@@ -21,13 +21,22 @@ export function splitSyllables(word) {
 // ---------------------------------------------------------------------------
 const CMU_HELD={AA:'а',AE:'а',AH:'а',AO:'о',AW:'а',AY:'а',EH:'э',ER:'э',EY:'э',
   IH:'и',IY:'и',OW:'о',OY:'о',UH:'у',UW:'у'};
-const LATIN=/[a-z]/i, CYRILLIC=/[а-яё]/i;
+const LATIN=/[a-zàâæçéèêëîïôœùûüÿäöüß]/i, CYRILLIC=/[а-яё]/i;
 
 /** Язык определяем по тому, чего в тексте больше. */
 export function detectLanguage(text) {
   const latin=(String(text).match(/[a-z]/gi)||[]).length;
   const cyrillic=(String(text).match(/[а-яё]/gi)||[]).length;
   return latin>cyrillic?'en':'ru';
+}
+
+export function normalizeLanguage(value) {
+  const text=String(value||'').toLowerCase();
+  if(/fran|french|français|francais/.test(text))return 'fr';
+  if(/germ|deutsch/.test(text))return 'de';
+  if(/engl|english/.test(text))return 'en';
+  if(/rus|рус/.test(text))return 'ru';
+  return '';
 }
 
 // Словарь может быть просто картой русских ударений (как раньше) либо парой языков.
@@ -56,13 +65,31 @@ export function analyzeEnglishWord(word,phonemes) {
   return {count,stresses,vowels,rhymes:tail?[tail]:[],unknown:false,ambiguous:false};
 }
 
+const IPA_VOWELS=/[aɑɐɒeɛəɜɞiɪoɔœøuʊyʏæ]/gu;
+const IPA_HELD={a:'а',ɑ:'а',ɐ:'а',ɒ:'а',e:'э',ɛ:'э',ə:'э',ɜ:'э',ɞ:'э',i:'и',ɪ:'и',o:'о',ɔ:'о',œ:'ё',ø:'ё',u:'у',ʊ:'у',y:'ю',ʏ:'ю',æ:'э'};
+const ipaNuclei=ipa=>[...String(ipa||'').replace(/[\\/]/g,'').matchAll(IPA_VOWELS)];
+export function analyzeIpaWord(word,entry) {
+  const ipa=Array.isArray(entry)?entry[0]:entry;
+  const nuclei=ipaNuclei(ipa);
+  const count=nuclei.length||1;
+  const stresses=nuclei.map((match,index)=>{
+    const from=index?nuclei[index-1].index:0;
+    const between=String(ipa).slice(from,match.index);
+    return between.includes('ˈ')?1:between.includes('ˌ')?.5:.35;
+  });
+  const first=nuclei.findIndex((match,index)=>stresses[index]===1);
+  const start=first>=0?nuclei[first].index:0;
+  const tail=String(ipa).slice(start).replace(/[ˈˌ.]/g,'').replace(/[\\/]/g,'').trim();
+  return {count,stresses,vowels:nuclei.map(match=>IPA_HELD[match[0]]||''),rhymes:tail?[tail]:[],unknown:!entry,ambiguous:Array.isArray(entry)&&entry.length>1};
+}
+
 /**
  * Английское слово по написанию делим на столько кусков, сколько в нём слогов
  * по словарю: режем после групп гласных, лишние стыки убираем, недостающие добавляем.
  */
 export function splitEnglishSyllables(word,count) {
   if(count<=1||word.length<2)return [word];
-  const groups=[...word.matchAll(/[aeiouy]+/gi)];
+  const groups=[...word.matchAll(/[aeiouyàâæéèêëîïôœùûüÿäöü]+/gi)];
   if(groups.length<2)return count<=1?[word]:evenly(word,count);
   // Между двумя гласными группами: без согласных режем встык, одну согласную отдаём
   // правому слогу, из двух и более одну оставляем левому. Так выходит «a-ban-don».
@@ -109,14 +136,21 @@ function evenly(word,count) {
 
 /** Куски написания под слоги: у русского по гласным, у английского по словарю. */
 export function syllablesOf(token,language) {
-  return (language||detectLanguage(token.word))==='en'
+  return (language||detectLanguage(token.word))!=='ru'
     ? splitEnglishSyllables(token.word,token.count)
     : splitSyllables(token.word);
 }
 
 export function analyzeWord(word,dictionary) {
   const lexicon=asLexicon(dictionary);
-  if(LATIN.test(word)&&!CYRILLIC.test(word))return analyzeEnglishWord(word,lexicon.en);
+  const language=dictionary?.language||'';
+  if(LATIN.test(word)&&!CYRILLIC.test(word)) {
+    if(language==='fr'||language==='de') {
+      const key=word.toLowerCase().replace(/[^a-zàâæçéèêëîïôœùûüÿäöüß'-]/gi,'');
+      return analyzeIpaWord(word,lexicon[language]?.get(key));
+    }
+    return analyzeEnglishWord(word,lexicon.en);
+  }
   const dict=lexicon.ru;
   const letters=[...word.toLowerCase()],count=letters.filter(isVowel).length;
   let accents=[],vowel=-1;
@@ -166,8 +200,9 @@ export function withAccents(dictionary,accents) {
 
 export function tokenize(text,dictionary,language) {
   const kind=language||detectLanguage(text);
-  const words=kind==='en'?/[a-z']+/gi:/[\u0430-\u044f\u0451\u0301]+/gi;
-  return [...text.matchAll(words)].map(match=>({word:match[0],start:match.index,end:match.index+match[0].length,...analyzeWord(match[0],dictionary)}));
+  const words=kind==='ru'?/[\u0430-\u044f\u0451\u0301]+/gi:/[a-zàâæçéèêëîïôœùûüÿäöüß'-]+/gi;
+  const scoped=dictionary instanceof Map?{ru:dictionary,en:null,language:kind}:{...dictionary,language:kind};
+  return [...text.matchAll(words)].map(match=>({word:match[0],start:match.index,end:match.index+match[0].length,...analyzeWord(match[0],scoped)}));
 }
 
 export function randomGenerator(seed) {
@@ -316,12 +351,12 @@ function describe(record,dictionary,language) {
   };
 }
 
-export function buildCorpus(text,dictionary,{lengths,mode,maxItems=4}={}) {
+export function buildCorpus(text,dictionary,{lengths,mode,language:forcedLanguage,maxItems=4}={}) {
   if(!lengths?.length)throw Error('Для индекса нужны длины строк песни');
   const wanted=[...new Set(lengths.filter(n=>n>0))],max=Math.max(...wanted);
   if(max>128)throw Error('В этой версии строка может содержать не более 128 слогов');
   const kind=mode||detectMode(text);
-  const language=detectLanguage(text);
+  const language=forcedLanguage||detectLanguage(text);
   const records=splitRecords(text,kind).map(r=>describe(r,dictionary,language)).filter(r=>r.count&&!r.dangling);
   if(!records.length)throw Error('В корпусе не нашлось ни одной записи с русскими словами.');
 

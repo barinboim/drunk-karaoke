@@ -45,6 +45,12 @@ jobs:
         with:
           node-version: 22
 
+      - name: Собрать английский словарь
+        run: node scripts/build-cmudict.mjs
+
+      - name: Собрать французский и немецкий словари
+        run: node scripts/build-pronunciations.mjs
+
       - name: Собрать список датасетов
         run: node scripts/corpora.mjs
 

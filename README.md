@@ -124,5 +124,6 @@ npm test
 - `scripts/library.mjs` — индексация папок с песнями; `scripts/backdrops.mjs` — сбор фонов; `scripts/corpora.mjs` — список корпусов и их проверка; `scripts/server.mjs` — локальный сервер с поддержкой Range.
 - `dist/data/dictionary.json` — словоформы [OpenRussian](https://github.com/Badestrand/russian-dictionary), CC BY-SA 4.0; `scripts/build-dictionary.py` воспроизводит сборку из `.cache/openrussian`.
 - `dist/data/accents.txt` — свой словарь-дополнение поверх OpenRussian. В нём чинится любое неверное ударение, и туда же добавлены местоимения и служебные слова: в OpenRussian нет их склонения, поэтому «тобой», «нами», «него» иначе остаются без ударения.
+- `scripts/build-cmudict.mjs` и `scripts/build-pronunciations.mjs` — сборка произношений для английского, французского и немецкого; последние используют IPA-Dict (его лицензия и источник лежат в `dist/data/IPA-DICT-LICENSE.txt`).
 
 `dist/data/library.json` и папки с песнями исключены из git: в индексе лежат абсолютные пути к твоим локальным файлам. Сайт никуда не опубликован.

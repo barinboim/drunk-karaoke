@@ -4,7 +4,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
-import {parseCorpusFile,parseAccents,withAccents,buildCorpus,detectLanguage,analyzeWord,normalize} from '../dist/engine.js';
+import {parseCorpusFile,parseAccents,withAccents,buildCorpus,detectLanguage,analyzeWord,normalize,normalizeLanguage} from '../dist/engine.js';
 
 const ROOT=fileURLToPath(new URL('..',import.meta.url));
 const FOLDER=path.join(ROOT,'dist/corpora');
@@ -15,6 +15,9 @@ const shared=parseAccents(read(path.join(ROOT,'dist/data/accents.txt')));
 const cmu=fs.existsSync(path.join(ROOT,'dist/data/cmudict.json'))
   ? new Map(Object.entries(JSON.parse(read(path.join(ROOT,'dist/data/cmudict.json')))))
   : null;
+const pronunciation=fs.existsSync(path.join(ROOT,'dist/data/pronunciations.json'))
+  ? JSON.parse(read(path.join(ROOT,'dist/data/pronunciations.json')))
+  : {};
 
 // Длины строк, которые реально встречаются в песнях: на них и проверяем достижимость.
 const LENGTHS=Array.from({length:24},(_,i)=>i+1);
@@ -31,16 +34,16 @@ for(const file of files){
   const id=file.replace(/\.txt$/,'');
   const parsed=parseCorpusFile(read(path.join(FOLDER,file)));
   const name=parsed.meta.name||id;
-  const language=parsed.meta.language||detectLanguage(parsed.text);
-  const dictionary={ru:withAccents(base,withAccents(shared,parsed.accents)),en:cmu};
+  const language=normalizeLanguage(parsed.meta.language)||detectLanguage(parsed.text);
+  const dictionary={ru:withAccents(base,withAccents(shared,parsed.accents)),en:cmu,fr:new Map(Object.entries(pronunciation.fr||{})),de:new Map(Object.entries(pronunciation.de||{})),language};
 
   let corpus;
-  try{corpus=buildCorpus(parsed.text,dictionary,{lengths:LENGTHS,mode:parsed.meta.mode});}
+  try{corpus=buildCorpus(parsed.text,dictionary,{lengths:LENGTHS,mode:parsed.meta.mode,language});}
   catch(error){console.log(`✗ ${file} — ${error.message}`);problems++;continue;}
 
   const unknown=new Set();
   for(const record of corpus.records)
-    for(const match of record.text.matchAll(language==='en'?/[a-z']+/gi:/[а-яё́]+/gi))
+    for(const match of record.text.matchAll(language==='ru'?/[а-яё́]+/gi:/[a-zàâæçéèêëîïôœùûüÿäöüß'-]+/gi))
       if(analyzeWord(match[0],dictionary).unknown)unknown.add(normalize(match[0]));
 
   const counts=corpus.records.map(record=>record.count);

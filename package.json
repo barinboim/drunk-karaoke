@@ -8,7 +8,8 @@
   "check": "node scripts/check-corpus.mjs",
   "library": "node scripts/library.mjs",
   "backdrops": "node scripts/backdrops.mjs",
-  "cmudict": "node scripts/build-cmudict.mjs",
+ "cmudict": "node scripts/build-cmudict.mjs",
+ "pronunciations": "node scripts/build-pronunciations.mjs",
   "start": "node scripts/server.mjs",
   "test": "node --test tests/*.test.mjs"
  }

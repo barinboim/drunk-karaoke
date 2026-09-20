@@ -112,6 +112,7 @@ roots.forEach(root=>{
       syllables:parsed.lines.reduce((sum,line)=>sum+line.notes.length,0),
       duration:Math.round(parsed.duration),
       voices:parsed.voices,
+      language:parsed.language,
     });
   }
 });
