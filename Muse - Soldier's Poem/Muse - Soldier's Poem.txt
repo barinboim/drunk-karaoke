@@ -1,0 +1,143 @@
+#TITLE:Soldier's Poem
+#ARTIST:Muse
+#LANGUAGE:English
+#GENRE:Rock
+#YEAR:2006
+#CREATOR:gun88
+#MP3:Muse - Soldier's Poem (instrumental).mp3
+#COVER:Muse - Soldier's Poem [CO].jpg
+#VIDEO:Muse - Soldier's Poem.mp4
+#VIDEOGAP:33.2
+#BPM:280
+#GAP:14705
+#MEDLEYSTARTBEAT:646
+#MEDLEYENDBEAT:1640
+: 0 60 6 Throw
+: 65 6 4  it
+: 72 32 7  all
+: 126 4 2  a
+: 132 32 7 way
+- 176
+: 180 8 7 Lets
+: 196 8 7  lose
+: 208 5 6  our
+: 215 3 4 selves
+: 220 8 2 ~
+- 238
+: 248 6 6 Cause
+: 256 5 6  there's
+: 264 22 6  no
+: 292 26 11  one
+- 322
+: 324 16 11 Left
+: 348 6 7  for
+: 358 8 6  us
+: 374 6 4  to
+: 390 18 11  blame
+- 410
+: 412 4 11 It's
+: 418 2 11  a
+* 424 13 11  shame
+: 441 5 11  we're
+: 448 8 11  all
+: 462 7 11  dy
+: 470 5 9 ~
+: 476 10 7 ing
+- 496
+: 504 7 4 And
+: 512 4 6  do
+: 518 18 7  you
+- 545
+: 548 14 9 Think
+: 564 7 9  you
+: 573 4 9  de
+: 580 8 11 serve
+: 590 4 9 ~
+: 596 8 9  your
+: 606 4 7 ~
+: 612 12 7  free
+: 628 8 6 dom?
+- 643
+: 646 28 6 How
+: 699 6 6  could
+: 706 3 4  you
+: 712 32 7  send
+- 754
+: 763 6 4 Us
+: 772 40 7  so
+: 820 6 7  far
+: 829 4 7  a
+: 836 10 6 way
+: 848 6 4  from
+: 858 5 4  home
+: 864 9 2 ~
+- 883
+: 891 5 6 When
+: 898 5 6  you
+: 905 23 6  know
+: 934 26 11  damn
+* 970 13 11  well
+: 988 6 7  that
+: 999 12 6  this
+: 1016 6 4  is
+: 1032 16 11  wrong
+- 1050
+: 1052 4 11 I
+: 1058 2 11  will
+: 1061 9 11  still
+: 1072 6 11  lay
+: 1080 6 11  down
+: 1088 6 11  my
+: 1096 8 11  life
+: 1106 4 9 ~
+: 1112 4 9  for
+: 1117 3 9  you
+: 1122 6 7 ~
+- 1138
+: 1148 4 4 And
+: 1154 4 6  do
+: 1160 18 7  you
+- 1185
+: 1188 14 9 Think
+: 1206 8 9  you
+: 1216 4 9  de
+: 1222 8 11 serve
+: 1232 4 9 ~
+: 1238 8 9  your
+: 1248 4 7 ~
+: 1254 12 7  free
+: 1268 8 6 dom?
+- 1285
+: 1289 31 14 No
+: 1333 9 13  I
+: 1346 6 14  don't
+* 1356 40 18  think
+: 1399 16 16 ~
+: 1418 5 14  you
+: 1425 19 14  do
+- 1454
+: 1478 13 16 There's
+: 1494 9 18  no
+: 1506 4 16 ~
+: 1512 11 13  jus
+: 1526 12 14 tice
+* 1544 28 23  in
+: 1576 20 22 ~
+: 1600 4 21  the
+: 1607 33 21  world
+- 1652
+: 1656 8 13 There's
+: 1666 6 14  no
+: 1674 26 23  jus
+* 1703 13 22 tice
+: 1722 8 22  in
+: 1732 4 21  the
+: 1738 24 21  world
+- 1771
+: 1775 4 19 And
+: 1780 4 21  there
+: 1786 6 19  nev
+: 1793 3 18 ~
+: 1799 4 18 er
+: 1804 32 18  was
+E

@@ -1,0 +1,233 @@
+﻿#TITLE:Butterflies And Hurricanes
+#ARTIST:Muse
+#MP3:Muse - Butterflies And Hurricanes (instrumental).mp3
+#COVER:Muse - Butterflies And Hurricanes [CO].jpg
+#VIDEO:Muse - Butterflies And Hurricanes.mp4
+#YEAR:2007
+#LANGUAGE:English
+#GENRE:Rock
+#CREATOR:gun88
+#MEDLEYSTARTBEAT:1260
+#MEDLEYENDBEAT:1780
+#BPM:230.25
+#GAP:7914
+: 0 40 -7 Change
+- 46
+: 48 5 -5 Eve
+: 54 5 -7 ry
+* 60 7 -7 thing
+: 68 3 -7  you
+: 72 31 -7  are
+- 106
+: 108 3 -10 And
+: 112 5 -5  eve
+: 118 5 -7 ry
+: 124 7 -8 thing
+: 132 3 -7  you
+: 136 28 -7  were
+- 174
+: 192 31 -7 Your
+: 224 11 -7  num
+: 236 3 -8 ~
+: 240 3 -8 ber
+: 244 5 -10 ~
+: 250 11 -10  has
+: 262 1 -10  been
+: 264 1 -8 ~
+: 266 24 -8  called
+- 300
+: 320 40 -7 Fights
+: 366 1 -7  and
+* 370 5 -10  bat
+: 376 5 -7 tles
+: 382 7 -8  have
+: 390 3 -7  be
+: 394 26 -7 gun
+- 426
+: 428 5 -7 Re
+* 434 5 -5 venge
+: 440 3 -7  will
+: 446 5 -8  sure
+: 452 5 -7 ly
+: 458 32 -7  come
+- 500
+: 512 31 -7 Your
+: 544 11 -7  hard
+: 556 7 -8 ~
+: 564 7 -8  times
+: 572 10 -10  are
+: 584 1 -8  a
+: 586 26 -8 head
+- 622
+: 640 40 -7 Best
+: 684 3 -10  you've
+: 688 7 -5  got
+: 696 5 -7  to
+: 702 5 -8  be
+: 708 1 -7  the
+: 710 32 -7  best
+- 746
+: 748 3 -10 You've
+: 752 5 -5  got
+: 758 5 -7  to
+: 764 7 -8  change
+: 772 1 -7  the
+: 774 18 -7  world
+- 794
+: 796 7 -7 And
+: 804 19 -3  use
+* 824 8 -3  this
+: 836 15 -3  chance
+: 852 7 -5  to
+* 860 7 -3  be
+: 868 16 -2  heard
+- 893
+: 896 27 -2 Your
+: 924 3 -3 ~
+: 928 15 -3  time
+: 944 7 -5  is
+: 952 8 -7 ~
+: 962 52 -7  now
+- 1044
+: 1152 40 5 Change
+* 1200 5 7  eve
+: 1206 5 5 ry
+: 1212 6 4 thing
+: 1220 4 5  you
+: 1226 28 5  are
+- 1258
+: 1260 3 5 And
+: 1264 5 7  eve
+: 1270 5 5 ry
+: 1276 7 4 thing
+: 1284 3 5  you
+: 1288 48 5  were
+- 1342
+: 1344 31 5 Your
+* 1376 11 5  num
+: 1388 3 4 ~
+: 1392 3 4 ber
+: 1396 3 2 ~
+: 1400 11 2  has
+: 1412 3 4  been
+: 1416 42 4  called
+- 1468
+: 1472 40 5 Fights
+* 1518 1 5  and
+* 1520 5 7  bat
+: 1526 5 5 tles
+: 1532 7 4  have
+: 1540 3 5  be
+: 1544 32 5 gun
+- 1578
+: 1580 3 5 Re
+* 1584 7 7 venge
+: 1592 3 5  will
+: 1596 7 4  sure
+: 1604 3 5 ly
+: 1608 44 5  come
+- 1661
+: 1664 24 5 Your
+: 1696 11 5  hard
+: 1708 3 4 ~
+: 1712 4 4  times
+: 1717 4 2 ~
+: 1724 7 2  are
+: 1732 3 4  a
+: 1736 44 4 head
+- 1789
+: 1792 40 5 Best
+: 1836 3 5  you've
+* 1840 5 7  got
+: 1846 5 5  to
+: 1852 7 4  be
+* 1860 1 5  the
+: 1862 32 5  best
+- 1898
+: 1900 3 5 You've
+: 1904 5 7  got
+: 1910 5 5  to
+: 1916 7 4  change
+: 1924 3 5  the
+: 1928 16 5  world
+- 1946
+: 1948 7 5 And
+: 1956 16 9  use
+* 1976 8 9  this
+: 1988 15 9  chance
+: 2004 7 7  to
+* 2012 7 9  be
+: 2020 16 10  heard
+- 2045
+: 2048 27 10 Your
+* 2076 3 9 ~
+: 2080 12 9  time
+: 2096 7 7  is
+: 2104 8 5 ~
+- 2114
+: 2116 23 10 Your
+* 2140 3 9 ~
+: 2144 12 9  time
+: 2160 7 7  Is
+* 2168 7 5 ~
+: 2176 52 9  now
+- 2258
+: 3196 36 -7 Don't
+* 3242 5 -5  let
+: 3248 5 -7  your
+: 3254 9 -8 self
+: 3264 3 -7 ~
+: 3268 30 -7  down
+- 3302
+: 3304 3 -7 Don't
+* 3308 3 -5  let
+: 3312 5 -7  your
+: 3318 7 -8 self
+: 3326 5 -7 ~
+: 3332 36 -7  go
+- 3378
+: 3388 31 -7 Your
+* 3420 11 -7  last
+: 3432 3 -8 ~
+: 3436 3 -8  chance
+: 3440 4 -10 ~
+: 3446 9 -10  has
+: 3456 4 -8  ar
+: 3462 36 -8 rived
+- 3508
+: 3516 40 5 Best
+: 3558 3 5  you've
+* 3562 5 7  got
+: 3568 5 5  to
+: 3574 7 4  be
+* 3582 1 5  the
+: 3584 32 5  best
+- 3622
+: 3624 3 5 You've
+: 3628 3 7  got
+: 3632 5 5  to
+: 3638 9 4  change
+* 3648 1 5  the
+: 3650 18 5  world
+- 3670
+: 3672 7 5 And
+: 3680 12 9  use
+: 3700 8 9  this
+: 3710 12 9  chance
+* 3726 7 7  to
+: 3734 7 9  be
+: 3742 17 10  heard
+- 3767
+: 3770 27 10 Your
+: 3798 3 9 ~
+: 3802 12 9  time
+: 3818 7 7  is
+: 3826 8 5 ~
+- 3836
+: 3838 23 10 Your
+* 3862 3 9 ~
+: 3866 12 9  time
+: 3882 7 7  Is
+* 3890 7 5 ~
+: 3898 52 9  now
+E
