@@ -1,0 +1,216 @@
+#TITLE:From the inside
+#ARTIST:Linkin Park
+#MP3:Linkin Park - From the Inside (instrumental).mp3
+#COVER:Linkin Park - From the inside[CO].jpg
+#BACKGROUND:Linkin Park - From the inside[BG].jpg
+#LANGUAGE:English
+#BPM:95
+#GAP:24830
+: 0 2 63 I 
+: 2 1 63 don't 
+: 3 3 63 know 
+: 6 2 63 wh
+: 8 2 64 o 
+: 10 2 63 to 
+: 12 6 61 trust
+- 19
+: 20 2 56 no 
+: 22 2 59 sur
+: 24 12 59 prise
+- 37
+: 48 2 63 hea
+: 50 1 63 vy 
+: 51 3 63 thoughts 
+: 54 2 63 si
+: 56 2 64 ft 
+: 58 2 63 through 
+: 60 6 61 dust
+- 67
+: 68 2 56 and 
+: 70 2 64 the 
+: 72 12 63 lies
+- 90
+: 132 12 61 I...
+: 144 12 59 -
+: 156 22 63 -
+- 179
+: 180 8 68 Take 
+: 188 2 66 e
+: 190 2 64 very
+: 192 8 63 thing 
+: 200 2 63 from 
+: 202 2 61 the 
+: 204 4 63 in
+: 208 4 64 side
+- 213
+: 214 2 61 and 
+: 216 4 66 throw 
+: 220 2 64 it 
+: 222 4 63 all 
+: 226 2 61 a
+: 228 8 68 way
+- 236
+: 236 2 66 cause 
+: 238 2 64 I 
+: 240 8 63 swear 
+: 248 2 63 for 
+: 250 2 61 the 
+: 252 4 63 last 
+: 256 4 64 time
+- 260
+: 260 2 61 I 
+: 262 2 64 won't 
+: 264 4 66 trust 
+: 268 2 64 my
+: 270 4 63 self 
+: 274 2 64 with 
+: 276 2 63 yo
+: 278 8 61 u
+- 287
+: 288 2 63 Ten
+: 290 1 63 sion 
+: 291 3 63 has 
+: 294 2 63 build
+: 296 2 64 ing 
+: 298 2 63 in
+: 300 6 61 side 
+: 308 2 56 stea
+: 310 2 59 di
+: 312 12 59 ly
+- 325
+: 336 2 63 Hea
+: 338 1 63 vy 
+: 339 3 63 thoughts 
+: 342 2 63 for
+: 344 2 64 cing 
+: 346 2 63 their 
+: 348 6 61 way 
+: 356 2 56 out 
+: 358 2 64 of 
+: 360 12 63 me 
+- 373
+: 420 2 64 I...
+: 422 10 63 -
+: 432 12 61 -
+: 444 22 63 - 
+- 467
+: 468 8 68 Take 
+: 476 2 66 e
+: 478 2 64 very
+: 480 8 63 thing 
+: 488 2 63 from 
+: 490 2 61 the 
+: 492 4 63 in
+: 496 4 64 side
+- 501
+: 502 2 61 and 
+: 504 4 66 throw 
+: 508 2 64 it 
+: 510 4 63 all 
+: 514 2 61 a
+: 516 8 68 way 
+- 524
+: 524 2 66 cause 
+: 526 2 64 I 
+: 528 8 63 swear
+: 536 2 63 for 
+: 538 2 61 the 
+: 540 4 63 last 
+: 544 4 64 time 
+- 548
+: 548 2 61 I 
+: 550 2 64 won't 
+: 552 4 68 trust 
+: 556 2 66 my
+: 558 4 68 self 
+: 562 2 66 with 
+: 564 32 68 you
+- 596 
+: 596 2 85 I 
+: 598 2 85 won't 
+: 600 4 85 waste 
+: 604 2 85 my
+: 606 4 85 self 
+: 610 2 85 with 
+: 612 12 85 you 
+: 624 12 85 you 
+: 636 12 85 you 
+- 648
+: 648 4 85 Waste 
+: 652 2 85 my
+: 654 4 85 self 
+: 658 2 85 with 
+: 660 12 85 you 
+: 672 12 85 you 
+: 684 12 85 you 
+- 698
+: 696 12 69 I 
+: 708 8 68 take 
+: 716 2 66 e
+: 718 2 64 very
+: 720 8 63 thing 
+: 728 2 63 from 
+: 730 2 61 the 
+: 732 4 63 in
+: 736 4 64 side 
+- 741
+: 742 2 61 and 
+: 744 4 66 throw 
+: 748 2 64 it 
+: 750 4 63 all 
+: 754 2 61 a
+: 756 8 68 way 
+- 764
+: 764 2 66 cause 
+: 766 2 64 I 
+: 768 8 63 swear 
+: 776 2 63 for 
+: 778 2 61 the 
+: 780 4 63 last 
+: 784 4 64 time 
+- 788
+: 788 2 61 I 
+: 790 2 64 won't 
+: 792 4 68 trust 
+: 796 2 66 my
+: 798 4 64 self 
+: 802 2 66 with 
+: 804 8 68 you
+- 812
+: 812 2 68 E
+: 814 2 69 very
+: 816 8 68 thing 
+: 824 2 66 from 
+: 826 2 64 the 
+: 828 4 63 in
+: 832 4 64 side
+- 836
+: 836 2 61 and 
+: 838 2 64 just 
+: 840 4 66 throw 
+: 844 2 64 it 
+: 846 4 63 all 
+: 850 2 61 a
+: 852 8 68 way
+- 860
+: 860 2 68 cause 
+: 862 2 69 I 
+: 864 8 68 swear 
+: 872 2 66 for 
+: 874 2 64 the 
+: 876 4 63 last 
+: 880 4 64 time 
+- 884
+: 884 2 61 I 
+: 886 2 64 won't 
+: 888 4 68 trust 
+: 892 2 66 my
+: 894 4 68 self 
+: 898 2 66 with 
+- 900
+: 900 12 68 you 
+- 912
+: 912 12 68 you 
+- 924
+: 924 12 68 you 
+E
