@@ -1,0 +1,503 @@
+#TITLE:Feel Good Inc.
+#ARTIST:Gorillaz
+#LANGUAGE:English
+#EDITION:SingStar Pop USA
+#GENRE:Pop
+#YEAR:2005
+#MP3:Gorillaz - Feel Good Inc. (instrumental).mp3
+#COVER:Gorillaz - Feel Good Inc..jpg
+#VIDEO:Gorillaz - Feel Good Inc..avi
+#VIDEOGAP:0
+#BPM:277
+#GAP:21768,95
+: 0 4 65 Feel
+: 8 4 63  good
+- 14 43
+: 63 5 65 Feel
+: 71 5 63  good
+- 78 107
+: 127 5 65 Feel
+: 135 5 63  good
+- 142 171
+* 191 4 65 Feel
+: 199 6 63  good
+- 207 235
+: 255 4 65 Feel
+: 263 5 63  good
+- 270 299
+: 319 4 65 Feel
+: 327 5 63  good
+- 334 363
+: 383 5 65 Feel
+: 391 4 63  good
+- 397 427
+: 447 4 65 Feel
+: 455 5 63  good
+- 462 507
+F 527 2 51 Ci
+F 531 2 51 ty
+F 535 2 51  break
+F 539 2 51 in'
+F 543 6 51  down
+- 550
+F 551 2 51 On
+F 555 2 51  a
+F 559 2 51  ca
+F 563 4 51 mels
+F 570 5 51  back
+- 577 578
+F 590 2 51 They'll
+F 594 2 51  just
+F 599 2 54  have
+F 603 2 54  to
+F 607 6 51  go
+- 614
+F 615 2 54 'Cause
+F 619 2 54  they
+F 623 2 51  don't
+F 627 3 54  know
+F 634 5 51  wack
+- 641 642
+F 650 2 51 So
+F 654 2 51  all
+F 658 2 51  you
+F 662 2 51  fill
+F 666 2 51  the
+F 671 5 51  streets
+- 677
+F 679 2 51 It's
+F 683 2 51  ap
+F 687 2 51 peal
+F 691 2 51 ing
+F 695 2 51  to
+F 699 6 51  see
+- 707
+F 710 2 51 You
+F 715 5 51  won't
+F 722 3 51  get
+F 726 2 51  un
+F 730 2 51 der
+F 734 2 51 coun
+F 738 3 51 ted
+- 742
+F 743 2 51 'Cause
+F 747 2 51  you're
+F 763 7 51  free
+- 772
+F 779 2 51 You
+F 783 2 51  got
+F 787 2 51  a
+F 791 2 51  new
+F 794 1 51  ho
+F 798 2 51 ri
+F 802 2 51 zon
+- 805
+F 806 2 51 It's
+F 810 2 51  e
+F 814 2 51 phe
+F 818 3 51 me
+F 822 2 51 ral
+F 826 5 51  style
+- 833 834
+F 844 2 51 A
+F 847 2 51  me
+F 851 2 51 lan
+F 855 2 54 cho
+F 859 2 54 ly
+F 863 5 51  town
+- 869
+F 871 2 54 Where
+F 875 2 54  we
+F 879 2 51  ne
+F 883 4 54 ver
+F 891 8 51  smile
+- 901
+F 907 2 51 Now
+F 911 2 51  all
+F 915 2 51  I
+F 919 2 51  want
+F 923 2 51  to
+F 927 5 51  hear
+- 933
+F 935 2 51 Is
+F 939 2 51  the
+F 943 2 51  mes
+F 947 3 51 sage
+F 955 5 51  beep
+- 962
+F 967 2 51 My
+F 971 5 51  dreams
+F 978 2 51  they've
+F 982 2 51  got
+F 986 2 51 ta
+F 990 3 51  kiss
+- 994
+F 995 2 51 Be
+F 999 2 51 cause
+F 1003 2 51  I
+F 1007 2 51  don't
+F 1011 4 51  get
+F 1018 7 51  sleep
+F 1027 7 51  no
+- 1036 1082
+: 1102 4 51 Wind
+: 1107 5 53 mill
+: 1115 5 54  wind
+: 1123 4 56 mill
+: 1131 4 58  for
+* 1139 5 63  the
+: 1146 7 58  land
+- 1155 1156
+: 1167 5 56 Turn
+: 1175 4 54  for
+: 1179 6 51 e
+: 1186 4 54 ver
+- 1192
+: 1194 11 56 Hand
+: 1206 4 53  in
+: 1210 4 51 ~
+: 1214 8 49 hand
+- 1224
+: 1230 4 51 Take
+: 1235 5 53  it
+: 1243 5 54  all
+: 1251 4 56  there
+: 1259 5 58  on
+: 1267 5 63  your
+: 1274 11 58  stride
+- 1287
+: 1294 5 56 It
+: 1299 5 54  is
+: 1306 5 51  tick
+: 1314 4 54 ing
+- 1320
+: 1322 21 56 Fall
+: 1345 5 53 in'
+: 1352 6 49  down
+- 1359
+: 1359 6 51 Love
+: 1366 4 53  fo
+: 1371 5 54 re
+: 1378 4 56 ver
+: 1386 4 58  love
+: 1395 4 63  is
+: 1403 5 58  free
+- 1409
+: 1410 4 56 Let's
+: 1418 8 56  turn
+: 1430 4 54  fo
+: 1434 6 51 re
+: 1442 4 54 ver
+- 1448
+: 1450 10 56 You
+: 1462 4 53  and
+: 1466 4 51 ~
+: 1470 8 49 me
+- 1480
+: 1486 4 51 Wind
+: 1491 5 53 mill
+: 1498 5 54  wind
+: 1507 4 56 mill
+: 1514 6 58  for
+: 1522 5 63  the
+: 1530 8 58  land
+- 1539
+: 1539 4 56 Is
+: 1547 5 56  eve
+: 1555 5 54 ry
+: 1562 5 51 bo
+: 1570 4 54 dy
+* 1579 48 56  in?
+- 1629 1643
+F 1663 1 58 Laugh
+F 1667 2 58 ing
+F 1671 2 58  gas
+F 1675 2 58  these
+F 1679 5 58  haz
+F 1686 4 58 mats
+- 1692
+F 1697 3 58 Fast
+F 1703 4 58  Cat
+- 1708
+F 1710 1 58 Li
+F 1713 1 58 ning
+F 1715 1 58  them
+F 1719 1 58  up
+F 1723 1 58  like
+F 1734 5 58  cracks
+- 1740
+F 1742 2 58 Lay
+F 1746 2 58  these
+F 1750 2 58  po
+F 1754 2 58 nies
+F 1758 2 58  at
+F 1762 2 58  the
+F 1765 3 58  track
+- 1770
+F 1775 2 58 It's
+F 1779 2 58  my
+F 1783 2 58  choc
+F 1787 1 58 o
+F 1790 1 58 late
+F 1793 1 58  at
+F 1796 8 58 tack
+- 1806
+F 1812 2 58 I'm
+F 1816 1 58  step
+F 1818 1 58 ping
+F 1820 1 58  in
+F 1824 1 58  hot
+F 1826 1 58 ter
+F 1828 1 58  this
+F 1832 4 58  year
+- 1838
+F 1840 2 58 Care
+F 1844 2 58  bear
+F 1848 1 58  rep
+F 1850 1 58 ping
+- 1852
+F 1852 1 58 It
+F 1856 1 58  har
+F 1858 1 58 der
+F 1860 1 58  this
+F 1864 5 58  year
+- 1871
+F 1873 2 58 Watch
+F 1877 2 58  me
+F 1881 2 58  as
+F 1885 2 58  I
+F 1889 2 58  gra
+F 1893 2 58 vi
+F 1897 2 58 tate
+- 1900
+F 1901 2 58 Ha
+F 1905 2 58  ha
+F 1909 2 58  ha
+F 1913 2 58  ha
+F 1917 11 58  ha
+- 1929
+F 1930 1 58 We
+F 1932 1 58  gon
+F 1934 1 58 na
+F 1936 3 58  ghost
+F 1942 3 58  town
+- 1946
+F 1948 3 58 This
+F 1953 3 58  mo
+F 1959 5 58 town
+- 1965
+F 1965 2 58 With
+F 1969 3 58  your
+F 1975 4 58  sound
+- 1980
+F 1980 2 58 You're
+F 1984 2 58  in
+F 1988 1 58  the
+F 1990 4 58  blink
+- 1995
+F 1997 2 58 Gon'
+F 2001 2 58  bite
+F 2005 1 58  the
+F 2007 2 58  dust
+- 2010
+F 2012 2 58 Can't
+F 2016 2 58  fight
+F 2020 1 58  with
+F 2022 3 58  us
+- 2026
+F 2028 2 58 With
+F 2032 2 58  your
+F 2038 2 58  sound
+F 2044 2 58  you
+F 2048 2 58  kill
+F 2052 1 58  the
+F 2054 3 58  inc.
+- 2058
+F 2060 2 58 So
+F 2065 3 58  don't
+F 2072 3 58  stop
+- 2077
+F 2081 2 58 Get
+F 2085 2 58  it,
+F 2089 2 58  get
+F 2093 3 58  it
+- 2098
+F 2101 2 58 Un
+F 2105 2 58 til
+F 2109 2 58  your
+F 2113 2 58  Ched
+F 2117 2 58 dar's
+F 2121 2 58  hea
+F 2124 2 58 vy
+- 2127
+F 2128 2 58 Watch
+F 2132 2 58  the
+F 2136 2 58  way
+F 2140 2 58  I
+F 2144 2 58  na
+F 2148 2 58 vi
+F 2152 2 58 gate
+- 2155
+F 2156 2 58 Ha
+F 2160 2 58  ha
+F 2164 2 58  ha
+F 2168 2 58  ha
+F 2172 10 58  ha
+- 2184 2220
+: 2240 4 65 Feel
+: 2248 5 63  good
+- 2255 2284
+: 2304 4 65 Feel
+: 2312 5 63  good
+- 2319 2348
+: 2368 4 65 Feel
+: 2376 4 63  good
+- 2382 2412
+: 2432 4 65 Feel
+: 2440 5 63  good
+- 2447 2812
+: 2832 5 51 Wind
+: 2837 4 53 mill
+: 2845 5 54  wind
+: 2852 4 56 mill
+: 2860 5 58  for
+: 2868 5 63  the
+: 2876 9 58  land
+- 2887 2888
+: 2896 5 56 Turn
+: 2903 5 54  for
+: 2908 6 51 e
+: 2916 5 54 ver
+- 2922
+: 2924 10 56 Hand
+: 2935 4 53  in
+: 2939 4 51 ~
+: 2944 7 49 hand
+- 2953
+: 2959 4 51 Take
+: 2964 5 53  it
+: 2971 6 54  all
+: 2979 5 56  there
+: 2987 6 58  on
+: 2996 5 63  your
+: 3004 8 58  stride
+- 3014 3015
+: 3024 3 56 It
+: 3028 5 54  is
+: 3036 5 51  tick
+: 3044 5 54 ing
+- 3050
+: 3052 20 56 Fall
+: 3076 4 53 in'
+: 3082 5 49  down
+- 3088
+: 3089 5 51 Love
+: 3095 3 53  fo
+: 3100 5 54 re
+: 3107 5 56 ver
+: 3115 5 58  love
+* 3124 5 63  is
+: 3132 7 58  free
+- 3140
+: 3140 4 56 Let's
+: 3148 11 56  turn
+: 3160 3 54  fo
+: 3164 6 51 re
+: 3172 5 54 ver
+- 3178
+: 3180 11 56 You
+: 3191 4 53  and
+: 3195 4 51 ~
+: 3200 7 49 me
+- 3209
+: 3215 5 51 Wind
+: 3221 4 53 mill
+: 3228 5 54  wind
+: 3236 5 56 mill
+: 3244 5 58  for
+: 3252 5 63  the
+: 3260 7 58  land
+- 3268
+: 3268 5 56 Is
+: 3276 5 56  eve
+: 3284 5 54 ry
+: 3292 6 51 bo
+: 3300 5 54 dy
+: 3308 42 56  in?
+- 3352 3388
+F 3408 4 58 Don't
+F 3416 4 58  shock
+- 3422
+F 3424 2 58 Get
+F 3428 2 58  it,
+F 3432 2 58  get
+F 3436 4 58  it
+- 3442
+F 3444 1 58 We
+F 3448 2 58  are
+F 3452 2 58  your
+F 3456 2 58  cap
+F 3460 2 58 tains
+- 3463
+F 3464 2 58 In
+F 3468 2 58  it
+- 3471
+F 3472 2 58 Stea
+F 3476 2 58 dy
+- 3479
+F 3480 2 58 Watch
+F 3484 2 58  me
+F 3488 2 58  na
+F 3492 2 58 vi
+F 3496 2 58 gate
+- 3499
+F 3500 2 58 Ha
+F 3504 2 58  ha
+F 3508 2 58  ha
+F 3512 2 58  ha
+F 3516 11 58  ha
+- 3529
+F 3536 4 58 Don't
+F 3544 4 58  stop
+- 3550
+F 3552 2 58 Get
+F 3556 2 58  it,
+F 3560 2 58  get
+F 3564 3 58  it
+- 3569
+F 3572 2 58 We
+F 3576 2 58  are
+F 3580 2 58  your
+F 3584 2 58  cap
+F 3588 2 58 tains
+- 3591
+F 3592 2 58 In
+F 3596 2 58  it
+- 3599
+F 3600 2 58 Stea
+F 3604 2 58 dy
+- 3607
+F 3608 2 58 Watch
+F 3612 2 58  me
+F 3616 2 58  na
+F 3620 2 58 vi
+F 3624 2 58 gate
+- 3627
+F 3628 2 58 Ha
+F 3632 2 58  ha
+F 3636 2 58  ha
+F 3640 2 58  ha
+F 3644 12 58  ha
+- 3658 3692
+: 3712 4 65 Feel
+: 3720 5 63  good
+- 3727 3756
+: 3776 4 65 Feel
+: 3784 5 63  good
+- 3791 3820
+: 3840 4 65 Feel
+: 3848 4 63  good
+- 3854 3884
+: 3904 4 65 Feel
+: 3912 5 63  good
+E
