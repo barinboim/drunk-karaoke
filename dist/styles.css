@@ -110,10 +110,17 @@ main{flex:1;min-height:0;width:100%;max-width:1180px;margin:0 auto;padding:14px 
 .dots span{width:10px;height:10px;border-radius:2px;background:#3a3d45;border:1px solid #000;cursor:pointer}
 .dots span.on{background:var(--green)}
 .library-note{text-align:center;color:var(--dim);font-size:12px;margin:0}
-/* Блок «принеси свою песню» виден всегда, а не только при пустой библиотеке: своя разметка
-   пригождается и тогда, когда на сайте уже есть песни. Линия сверху отделяет его от полок. */
-.welcome{max-width:620px;margin:30px auto 0;padding-top:22px;border-top:1px solid rgba(255,255,255,.09);text-align:center}
-.welcome h2{margin:0 0 10px;font-size:22px;color:var(--yellow);text-shadow:3px 3px 0 #000}
+/* Блок «принеси свою песню» доступен всегда, но свёрнут: своя разметка нужна не каждому,
+   а места в закрытом виде он занимает одну строку. Раскрыт сам, только если петь нечего. */
+.welcome{max-width:620px;margin:18px auto 0;text-align:center}
+.welcome summary{
+  display:inline-block;cursor:pointer;list-style:none;
+  color:var(--dim);font-size:12px;padding:6px 14px;
+  border:1px dashed rgba(255,255,255,.18);border-radius:10px;
+}
+.welcome summary::-webkit-details-marker{display:none}
+.welcome summary:hover{color:var(--ink);border-color:rgba(255,255,255,.35)}
+.welcome[open] summary{color:var(--yellow);border-style:solid;margin-bottom:14px}
 .welcome p{color:var(--dim);font-size:13px;line-height:1.6;margin:0 0 16px}
 .welcome b{color:var(--ink)}
 .welcome-note{font-size:11px!important;margin-top:16px!important}
