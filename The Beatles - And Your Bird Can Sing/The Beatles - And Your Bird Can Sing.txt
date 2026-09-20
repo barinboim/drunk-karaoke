@@ -1,0 +1,177 @@
+#TITLE:And Your Bird Can Sing
+#ARTIST:The Beatles
+#LANGUAGE:English
+#EDITION:The Beatles Rock Band
+#GENRE:Pop
+#YEAR:1966
+#MP3:The Beatles - And Your Bird Can Sing (instrumental).mp3
+#COVER:The Beatles - And Your Bird Can Sing.jpg
+#VIDEO:The Beatles - And Your Bird Can Sing.flv
+#VIDEOGAP:-0,8
+#BPM:398,77
+#GAP:10702
+: 0 5 11 Tell
+: 7 4 11  me
+: 13 2 11  that
+: 19 3 11  you've
+: 25 9 11  got
+- 36
+: 38 3 11 Eve
+: 42 3 11 ry
+* 49 2 11 thing
+* 52 5 13 ~
+: 60 9 11  you
+: 71 6 11  want
+: 78 4 8 ~
+- 92
+: 96 9 11 And
+: 108 10 11  your
+: 121 9 16  bird
+* 132 4 16  can
+* 137 4 18 ~
+: 145 9 16  sing
+- 155
+: 157 2 11 But
+: 163 2 11  you
+: 168 4 13  don't
+: 176 6 16  get
+* 188 3 16  me
+* 192 6 18 ~
+- 224
+: 261 2 13 You
+: 266 4 16  don't
+: 273 6 16  get
+: 302 38 16  me
+- 350
+: 386 3 8 You
+: 390 4 11 ~
+: 399 8 11  say
+: 411 6 11  you've
+: 422 9 11  seen
+: 433 3 11  se
+: 437 7 13 ~
+: 446 8 11 ven
+: 459 5 11  won
+: 465 2 8 ~
+: 470 3 8 ders
+- 479
+: 482 9 11 And
+: 495 9 11  your
+* 507 11 16  bird
+: 519 3 16  is
+: 523 3 18 ~
+: 530 8 16  green
+- 540
+: 542 2 11 But
+: 548 2 11  you
+: 554 4 13  can't
+: 562 7 16  see
+: 573 3 16  me
+* 577 7 18 ~
+- 610
+: 646 2 13 You
+: 651 8 16  can't
+: 663 8 16  see
+: 686 36 16  me
+- 732
+: 771 3 11 When
+: 777 8 11  your
+: 789 8 11  prized
+: 802 6 11  pos
+: 812 4 11 ses
+: 817 3 13 ~
+: 823 7 11 sions
+- 840
+: 866 6 11 Start
+: 879 3 11  to
+: 885 10 11  weigh
+: 897 8 11  you
+: 908 6 13  down
+: 915 5 11 ~
+: 921 9 5 ~
+- 940
+: 960 4 11 Look
+: 968 7 11  in
+: 979 10 11  my
+: 993 9 11  di
+: 1006 4 13 rec
+: 1016 6 11 tion
+- 1032
+: 1041 4 11 I'll
+: 1047 4 16  be
+: 1053 5 13  'round
+: 1059 7 11 ~
+- 1076
+: 1088 4 11 I'll
+: 1094 4 16  be
+* 1100 6 13  'round
+* 1107 9 11 ~
+- 1169
+: 1538 5 11 When
+: 1545 9 11  your
+: 1558 12 11  bird
+: 1571 3 11  is
+: 1582 7 13  bro
+: 1594 5 11 ken
+- 1609
+: 1635 5 11 Will
+: 1643 4 11  it
+: 1655 10 11  bring
+: 1667 9 11  you
+: 1679 5 13  down
+: 1685 4 11 ~
+: 1690 6 5 ~?
+- 1706
+: 1731 3 11 You
+: 1738 9 11  may
+: 1751 11 11  be
+: 1764 8 11  a
+* 1774 4 11 wo
+* 1779 5 13 ~
+: 1786 6 11 ken
+- 1802
+: 1811 4 11 I'll
+: 1818 4 16  be
+: 1823 6 13  'round
+: 1830 10 11 ~
+- 1850
+: 1859 4 11 I'll
+: 1865 5 16  be
+: 1871 6 13  'round
+: 1878 10 11 ~
+- 1898
+: 1919 3 9 You
+: 1925 5 11  tell
+: 1932 3 11  me
+: 1937 4 11  that
+: 1943 4 11  you've
+: 1950 9 11  heard
+- 1960
+: 1962 4 11 Eve
+: 1968 4 11 ry
+: 1974 3 11  sound
+: 1978 6 13 ~
+: 1987 9 11  there
+: 1999 4 11  is
+: 2004 2 8 ~
+- 2018
+: 2022 8 11 And
+: 2034 9 11  your
+: 2046 9 16  bird
+: 2057 5 16  can
+: 2063 3 18 ~
+: 2071 8 16  swing
+- 2080
+: 2082 1 13 But
+: 2088 2 11  you
+: 2094 5 13  can't
+: 2101 8 16  hear
+* 2112 3 16  me
+* 2116 4 20 ~
+* 2121 4 18 ~
+- 2151
+: 2184 3 13 You
+: 2190 5 16  can't
+: 2197 9 16  hear
+: 2225 37 16  me
+E
