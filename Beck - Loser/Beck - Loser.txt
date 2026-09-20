@@ -1,0 +1,537 @@
+#TITLE:Loser
+#ARTIST:Beck
+#LANGUAGE:English
+#GENRE:Rock Alternativo
+#YEAR:1993
+#MP3:Beck - Loser (instrumental).mp3
+#COVER:Beck - Loser.jpg
+#VIDEO:Beck - Loser.mp4
+#BPM:240
+#GAP:23440
+#MEDLEYSTARTBEAT:714
+#MEDLEYENDBEAT:1081
+F 0 2 -3 In
+F 3 2 -3  the
+F 6 3 -3  time
+F 10 3 -3  of
+F 15 3 -3  chim
+F 20 4 -3 pan
+F 26 3 -3 zees
+F 31 2 -3  I
+F 34 2 -3  was
+F 37 1 -3  a
+F 39 2 -3  mon
+F 43 2 -3 key
+- 49
+F 51 2 -3 Bu
+F 54 2 -3 tane
+F 57 2 -3  in
+F 60 2 -3  my
+F 63 4 -3  veins
+F 68 2 -3  so
+- 71
+F 73 2 -3 I'm
+F 76 1 -3  out
+F 78 1 -3  to
+F 80 1 -3  cut
+F 82 2 -3  the
+F 85 2 -3  jun
+F 88 1 -3 kie
+F 90 1 -3  with
+F 92 1 -3  the
+F 94 3 -3  plas
+F 99 1 -3 tic
+- 101
+F 103 2 -3 Eye
+F 108 4 -3 balls
+- 117
+F 119 3 -3 Spray
+F 124 3 -3  paint
+F 128 2 -3  the
+F 131 2 -3  vege
+F 134 2 -3 ta
+F 137 2 -3 bles
+- 140
+F 142 3 -3 Dog
+F 147 3 -3  food
+F 151 5 -3  stalls
+F 158 1 -3  with
+F 160 2 -3  the
+F 163 4 -3  beef
+F 168 3 -3 cake
+F 173 4 -3  pan
+F 178 2 -3 ty
+F 181 2 -3 hose
+- 189
+F 191 3 -3 Kill
+F 195 1 -3  the
+F 197 2 -3  head
+F 200 4 -3 lights
+F 205 2 -3  and
+F 209 2 -3  put
+F 212 1 -3  it
+F 214 2 -3  in
+F 217 3 -3  neu
+F 222 3 -3 tral
+- 228
+F 230 4 -3 Stock
+F 236 4 -3  car
+F 242 3 -3  flam
+F 246 1 -3 in'
+- 248
+F 250 1 -3 With
+F 252 1 -3  a
+F 254 2 -3  los
+F 257 2 -3 er
+F 260 1 -3  and
+F 262 1 -3  the
+F 264 2 -3  cruise
+F 267 2 -3  con
+F 270 2 -3 trol
+- 274
+F 276 2 -3 Ba
+F 279 2 -3 by's
+F 282 4 -3  in
+F 287 2 -3  Re
+F 290 2 -3 no
+F 293 1 -3  with
+F 295 2 -3  the
+F 298 2 -3  vi
+F 301 1 -3 ta
+F 303 2 -3 min
+F 307 3 -3  D
+- 313
+F 315 2 -3 Got
+F 318 2 -3  a
+F 321 2 -3  cou
+F 324 1 -3 ple
+F 326 2 -3  of
+F 330 3 -3  cou
+F 334 4 -3 ches
+- 339
+F 341 5 -3 Sleep
+F 347 3 -3  on
+F 351 2 -3  the
+F 354 2 -3  love
+F 358 3 -3  seat
+- 364
+F 366 2 -3 Some
+F 369 1 -3 one
+F 371 3 -3  keeps
+F 376 3 -3  say
+F 380 2 -3 in
+F 383 2 -3  I'm
+F 386 1 -3  in
+F 388 3 -3 sane
+- 392
+F 394 2 -3 To
+F 397 2 -3  com
+F 400 1 -3 plain
+F 402 2 -3  a
+F 405 2 -3 bout
+F 408 1 -3  a
+F 410 4 -3  shot
+F 417 2 -3 gun
+- 420
+F 422 2 -3 Wed
+F 425 2 -3 ding
+F 428 1 -3  and
+F 430 1 -3  a
+F 432 3 -3  stain
+F 436 1 -3  on
+F 438 2 -3  my
+F 441 5 -3  shirt
+- 457
+F 461 3 -3 Don't
+F 465 1 -3  be
+F 467 3 -3 lieve
+F 472 2 -3  e
+F 475 2 -3 very
+F 478 2 -3 thing
+F 481 2 -3  that
+F 484 2 -3  you
+F 488 2 -3  breathe
+- 491
+F 493 1 -3 You
+F 495 2 -3  get
+F 498 2 -3  a
+F 501 2 -3  park
+F 504 2 -3 ing
+F 507 4 -3  vio
+F 512 2 -3 la
+F 515 1 -3 tion
+F 517 1 -3  and
+- 519
+F 521 1 -3 A
+F 523 2 -3  mag
+F 526 2 -3 got
+F 529 1 -3  on
+F 531 2 -3  your
+F 534 4 -3  sleeve
+F 540 3 -3  so
+F 545 3 -3  shave
+F 549 3 -3  your
+- 553
+F 555 4 -3 Face
+F 560 3 -3  with
+F 564 3 -3  some
+F 568 4 -3  mace
+F 573 1 -3  in
+F 575 2 -3  the
+F 578 4 -3  dark
+- 587
+F 589 3 -3 Sav
+F 593 2 -3 in'
+F 596 2 -3  all
+F 599 2 -3  your
+F 602 3 -3  food
+F 607 1 -3  stamps
+- 609
+F 611 2 -3 And
+F 614 2 -3  burn
+F 617 1 -3 in'
+F 619 2 -3  down
+F 622 1 -3  the
+F 624 2 -3  trai
+F 627 2 -3 ler
+F 631 5 -3  park
+- 646
+F 653 6 -3 Yo
+- 675
+F 697 3 -3 Cut
+F 701 3 -3  it
+- 714
+: 725 32 2 Soy
+: 759 5 6  un
+: 765 3 9 ~
+: 770 4 14  per
+: 776 2 16 de
+: 779 14 14 dor
+- 804
+: 808 3 12 I'm
+: 812 2 14  a
+: 815 2 16  los
+: 818 3 14 er
+: 823 5 12  ba
+: 829 23 9 by,
+: 854 3 9  so
+: 858 4 7  why
+: 863 4 7  don't
+: 868 2 9  you
+: 871 4 6  kill
+: 877 15 2  me?
+- 901
+: 904 33 2 Soy
+: 939 5 6  un
+: 945 3 9 ~
+: 950 4 14  per
+: 955 2 16 de
+: 959 14 14 dor
+- 984
+: 988 3 12 I'm
+: 992 2 14  a
+: 995 2 16  los
+: 998 3 14 er
+: 1004 4 12  ba
+: 1009 22 9 by,
+: 1033 3 9  so
+: 1038 4 7  why
+: 1043 4 7  don't
+: 1048 2 9  you
+: 1051 4 6  kill
+: 1057 15 2  me?
+- 1081
+F 1085 3 -3 For
+F 1089 1 -3 ces
+F 1091 3 -3  of
+F 1095 3 -3  e
+F 1099 4 -3 vil
+F 1104 1 -3  in
+F 1106 1 -3  a
+F 1108 3 -3  bo
+F 1113 4 -3 zo
+F 1119 4 -3  night
+F 1125 3 -3 mare
+- 1129
+F 1131 2 -3 Banned
+F 1134 3 -3  all
+F 1138 2 -3  the
+F 1141 2 -3  mu
+F 1144 1 -3 sic
+- 1146
+F 1148 1 -3 With
+F 1150 2 -3  a
+F 1153 2 -3  pho
+F 1156 1 -3 ny
+F 1158 5 -3  gas
+F 1164 2 -3  cham
+F 1167 2 -3 ber
+F 1170 4 -3  'cause
+F 1175 3 -3  one's
+- 1179
+F 1181 2 -3 Got
+F 1184 2 -3  a
+F 1187 1 -3  wea
+F 1189 2 -3 sel
+F 1192 3 -3  and
+F 1197 2 -3  o
+F 1200 2 -3 ther's
+F 1203 2 -3  got
+F 1206 2 -3  a
+F 1209 4 -3  flag
+- 1218
+F 1220 4 -3 One's
+F 1225 3 -3  on
+F 1229 2 -3  the
+F 1232 3 -3  pole
+F 1236 3 -3  shove
+F 1240 2 -3  the
+F 1243 2 -3  o
+F 1246 1 -3 ther
+F 1248 2 -3  in
+F 1251 1 -3  a
+F 1253 3 -3  bag
+- 1257
+F 1259 2 -3 With
+F 1262 1 -3  the
+F 1264 3 -3  re
+F 1268 2 -3 run
+F 1273 5 -3  shows
+- 1280
+F 1282 2 -3 And
+F 1285 2 -3  the
+F 1288 3 -3  co
+F 1294 3 -3 caine
+F 1299 4 -3  nose
+F 1305 2 -3  job
+- 1311
+F 1313 1 -3 The
+F 1315 2 -3  day
+F 1318 3 -3 time
+F 1322 3 -3  crap
+F 1327 2 -3  of
+F 1330 1 -3  a
+F 1332 3 -3  folk
+F 1337 2 -3 sing
+F 1340 2 -3 er
+F 1343 5 -3  slob
+- 1355
+F 1358 1 -3 He
+F 1360 2 -3  hung
+F 1363 2 -3  him
+F 1366 3 -3 self
+F 1372 1 -3  with
+F 1374 2 -3  a
+F 1377 2 -3  gui
+F 1381 3 -3 tar
+F 1386 5 -3  string
+- 1397
+F 1400 3 -3 Slap
+F 1404 1 -3  the
+F 1406 2 -3  tur
+F 1409 1 -3 key
+F 1411 2 -3  neck
+- 1414
+F 1416 2 -3 And
+F 1419 2 -3  it's
+F 1422 3 -3  hang
+F 1426 2 -3 in
+F 1429 1 -3  from
+F 1431 2 -3  a
+F 1434 2 -3  pi
+F 1437 2 -3 geon
+F 1440 3 -3  wing
+- 1446
+F 1448 1 -3 You
+F 1450 4 -3  can't
+F 1456 4 -3  write
+F 1462 2 -3  if
+F 1465 2 -3  you
+F 1468 3 -3  can't
+F 1473 2 -3  re
+F 1476 3 -3 late
+- 1482
+F 1484 3 -3 Trade
+F 1488 1 -3  the
+F 1490 4 -3  cash
+F 1495 2 -3  for
+F 1498 2 -3  the
+F 1501 3 -3  beef
+- 1505
+F 1507 1 -3 For
+F 1509 2 -3  the
+F 1513 2 -3  bo
+F 1516 2 -3 dy
+F 1519 1 -3  for
+F 1521 2 -3  the
+F 1524 3 -3  hate
+F 1529 2 -3  and
+F 1532 2 -3  my
+F 1535 3 -3  time
+- 1539
+F 1541 2 -3 Is
+F 1544 1 -3  a
+F 1546 4 -3  piece
+F 1551 2 -3  of
+F 1554 7 -3  wax
+- 1567
+F 1569 4 -3 Fal
+F 1574 2 -3 lin'
+F 1577 1 -3  on
+F 1579 1 -3  a
+F 1581 3 -3  ter
+F 1586 3 -3 mite
+- 1597
+F 1600 2 -3 That's
+F 1603 2 -3  chok
+F 1606 1 -3 in
+F 1608 1 -3  on
+F 1610 2 -3  the
+F 1614 3 -3  splin
+F 1618 2 -3 ters
+- 1622
+: 1624 32 2 Soy
+: 1658 5 6  un
+: 1664 3 9 ~
+: 1669 4 14  per
+: 1675 2 16 de
+: 1678 14 14 dor
+- 1703
+: 1707 3 12 I'm
+: 1711 2 14  a
+: 1714 2 16  los
+: 1717 3 14 er
+: 1723 4 12  ba
+: 1729 22 9 by,
+: 1753 3 9  so
+: 1758 4 7  why
+: 1763 4 7  don't
+: 1768 2 9  you
+: 1771 3 6  kill
+: 1776 14 2  me?
+- 1800
+: 1804 33 2 Soy
+: 1839 4 6  un
+: 1844 3 9 ~
+: 1849 5 14  per
+: 1855 2 16 de
+: 1859 13 14 dor
+- 1883
+: 1887 3 12 I'm
+: 1891 2 14  a
+: 1894 2 16  lo
+: 1897 4 14 ser
+: 1903 4 12  ba
+: 1909 22 9 by,
+: 1933 3 9  so
+: 1938 4 7  why
+: 1943 4 7  don't
+: 1948 2 9  you
+: 1951 4 6  kill
+: 1956 15 2  me?
+- 2003
+F 2058 3 -3 Yo
+F 2063 3 -3  bring
+F 2067 1 -3  it
+F 2069 2 -3  on
+F 2072 6 -3  down
+- 2110
+F 2435 2 -3 I'm
+F 2438 2 -3  a
+F 2441 3 -3  driv
+F 2445 2 -3 er,
+F 2448 2 -3  I'm
+F 2451 2 -3  a
+F 2454 1 -3  win
+F 2456 2 -3 ner
+- 2468
+F 2478 2 -3 Things
+F 2481 2 -3  are
+F 2484 1 -3  gon
+F 2486 1 -3 na
+F 2488 4 -3  change,
+F 2494 2 -3  I
+F 2497 2 -3  can
+F 2500 3 -3  feel
+F 2504 2 -3  it
+- 2516
+: 2523 33 2 Soy
+* 2558 5 6  un
+* 2564 3 9 ~
+* 2569 5 14  per
+* 2575 2 16 de
+* 2578 14 14 dor
+- 2603
+: 2607 3 12 I'm
+: 2611 2 14  a
+: 2614 2 16  los
+: 2617 3 14 er
+: 2622 5 12  ba
+: 2628 23 9 by,
+: 2653 3 9  so
+: 2657 4 7  why
+: 2662 4 7  don't
+: 2667 2 9  you
+: 2670 4 6  kill
+: 2675 15 2  me?
+- 2699
+: 2703 33 2 Soy
+: 2738 5 6  un
+: 2744 3 9 ~
+: 2749 4 14  per
+: 2754 2 16 de
+: 2758 14 14 dor
+- 2783
+: 2787 3 12 I'm
+: 2791 2 14  a
+: 2794 2 16  los
+: 2797 3 14 er
+* 2802 4 12  ba
+* 2808 22 9 by,
+: 2832 3 9  so
+: 2837 4 7  why
+: 2842 4 7  don't
+: 2847 2 9  you
+: 2850 4 6  kill
+: 2855 15 2  me?
+- 2879
+: 2883 33 2 Soy
+: 2918 5 6  un
+: 2924 3 9 ~
+: 2929 4 14  per
+: 2934 2 16 de
+: 2937 15 14 dor
+- 2963
+: 2967 3 12 I'm
+: 2971 2 14  a
+: 2974 2 16  lo
+: 2977 3 14 ser
+: 2982 4 12  ba
+: 2988 22 9 by,
+* 3012 4 9  so
+* 3017 4 7  why
+* 3022 4 7  don't
+* 3027 2 9  you
+* 3030 4 6  kill
+* 3035 15 2  me?
+- 3059
+: 3063 33 2 Soy
+: 3098 5 6  un
+: 3104 3 9 ~
+: 3109 4 14  per
+: 3114 2 16 de
+: 3118 13 14 dor
+- 3143
+: 3147 2 12 I'm
+: 3150 2 14  a
+: 3153 2 16  los
+: 3156 4 14 er
+: 3162 4 12  ba
+: 3168 22 9 by,
+: 3192 3 9  so
+: 3197 4 7  why
+: 3202 4 7  don't
+: 3207 2 9  you
+: 3210 4 6  kill
+: 3215 13 2  me?
+E

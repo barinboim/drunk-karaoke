@@ -1,0 +1,249 @@
+#TITLE:Highway To Hell
+#ARTIST:Ac/dc
+#MP3:Acdc - Highway To Hell (instrumental).mp3
+#COVER:Acdc - Highway To Hell [CO].jpg
+#BACKGROUND:Acdc - Highway To Hell [BG].jpg
+#EDITION:Ultrastar Metal
+#LANGUAGE:English
+#BPM:116
+#GAP:18300
+: 0 4 66  Liv
+: 4 2 69 in'
+: 6 2 72  ea
+: 8 2 73 sy,
+: 18 1 69  lov
+: 19 1 69 in'
+: 22 4 69  free
+-30
+: 34 2 66  Sea
+: 36 2 69 son
+: 38 2 69  tick
+: 40 2 66 et
+: 42 2 69  on
+: 44 2 66  a
+: 46 2 72  one
+: 48 2 69  way
+: 50 2 67  ride
+-60
+: 64 2 66  Ask
+: 66 2 68 ing
+: 68 2 69  noth
+: 70 2 72 ing,
+: 72 2 72 
+: 82 2 66  leave
+: 84 2 69  me
+: 86 4 72  be
+-90
+: 98 2 72  Tak
+: 100 2 72 ing
+: 102 2 72  ev
+: 104 2 72 ery
+: 106 2 72 thing
+: 108 2 69  in
+: 110 2 71  my
+: 112 4 69  stride
+-122
+: 130 2 76  Don't
+: 132 2 73  need
+: 134 2 69  rea
+: 136 4 69 son,
+: 146 2 67  don't
+: 148 2 69  need
+: 150 4 72  rime
+-154
+: 162 4 72  Ain't
+: 166 2 72  noth
+: 168 2 72 ing
+: 170 2 71  I
+: 172 2 69  would
+: 174 2 71  ra
+: 176 1 69 ther
+: 180 1 69  do
+-186
+: 194 2 76  Go
+: 196 2 72 ing
+: 198 4 76  down,
+: 208 2 72  for
+: 210 2 69  a
+: 212 6 72  time
+-220
+: 226 2 72  My
+: 230 2 72  friends
+: 232 2 72  are
+: 234 2 71  gon
+: 236 2 69 na
+: 238 2 71  be
+: 240 4 71  there
+: 244 6 62  too
+-250
+: 264 2 66  I'm
+: 266 2 69  on
+: 268 2 66  the
+: 270 8 69  high
+: 278 4 69 way
+: 282 2 64  to
+: 284 2 66  hell
+-292
+: 298 2 66  on
+: 300 2 69  the
+: 302 8 69  high
+: 310 4 69 way
+: 314 2 66  to
+: 316 2 69  hell
+-325
+: 334 8 69  high
+: 342 4 69 way
+: 346 2 66  to
+: 348 2 69  hell
+-355
+: 360 2 72  I'm
+: 362 2 71  on
+: 364 2 69  the
+: 366 8 69  high
+: 374 4 69 way
+: 378 2 66  to
+: 380 2 69  hell
+-400
+: 416 2 66  No
+: 418 4 69  more
+: 422 4 72  stop
+: 426 4 73  signs,
+: 434 2 69  speed
+: 436 2 66  lim
+: 438 2 72 it
+-445
+: 450 4 69  No
+: 454 2 69 body's
+: 456 2 66  gon
+: 458 2 69 na
+: 466 2 72  slow
+: 468 2 69  me
+: 470 2 67  down
+-476
+: 480 4 72  Like
+: 484 2 69  a
+: 486 4 72  wheel
+: 496 2 66  gon
+: 498 2 69 na
+: 500 2 72  spin
+: 502 4 72  it
+-508
+: 514 4 76  No
+: 518 2 72 body's
+: 520 2 69  gon
+: 522 2 69 na
+: 524 2 68  mess
+: 526 4 69  me
+: 532 2 68  a
+: 534 4 69 round
+-538
+: 544 2 73  Hey
+: 546 2 76  sa
+: 548 4 76 tan,
+-552
+: 562 2 66  paid
+: 564 2 69  my
+: 566 4 72  dues
+-570
+: 584 2 72  play
+: 586 2 71 ing
+: 588 2 69  in
+: 592 2 72  a
+: 594 4 69  rock
+: 598 4 73  band
+-602
+: 608 4 73  Hey
+: 612 2 76  Mam
+: 614 4 76 ma,
+: 626 2 72  look
+: 628 2 73  at
+: 630 4 76  me
+-635
+: 640 2 73  I'm
+: 642 2 73  on
+: 644 2 73  the
+: 646 4 73  way
+: 650 2 71  to
+: 652 2 69  the
+: 654 2 71  prom
+: 656 4 71 ised
+: 660 1 67  land
+-670
+: 680 2 66  I'm
+: 682 2 69  on
+: 684 2 66  the
+: 686 8 69  high
+: 694 4 69 way
+: 698 2 66  to
+: 700 2 66  hell
+-708
+: 714 2 66  on
+: 716 2 69  the
+: 718 8 69  high
+: 726 4 69 way
+: 730 2 66  to
+: 732 2 69  hell
+: 734 4 69 
+-740
+: 750 8 69  high
+: 758 4 69 way
+: 762 2 66  to
+: 764 2 69  hell
+-770
+: 782 8 69  high
+: 790 4 64 way
+: 794 2 66  to
+: 796 4 69  hell
+-820
+: 832 6 72  Don't
+: 838 4 72  stop
+: 842 4 72  me
+-900
+: 1006 8 69  high
+: 1014 4 69 way
+: 1018 2 66  to
+: 1020 2 66  hell
+-1028
+: 1034 2 66  on
+: 1036 2 69  the
+: 1038 8 69  high
+: 1046 4 69 way
+: 1050 2 66  to
+: 1052 2 66  hell
+-1059
+: 1066 2 71  I�m
+: 1068 2 69  on
+: 1070 3 73  the
+: 1073 6 71  High
+: 1078 4 64 way
+: 1082 4 68  to
+: 1086 4 66  hell
+-1090
+: 1098 2 66  on
+: 1100 2 69  the
+: 1102 8 69  high
+: 1110 4 69 way to
+-1120
+: 1133 8 69  high
+: 1141 4 69 way
+: 1145 2 66  to
+: 1147 2 69  hell
+-1151
+: 1164 8 69 high
+: 1172 4 69 way
+: 1176 2 66  to
+: 1178 2 69  hell
+-1182
+: 1196 8 69 high
+: 1204 4 69 way
+: 1208 2 66  to
+: 1210 2 69  hell
+-1215
+: 1228 8 69 high
+: 1236 4 69 way
+: 1240 2 66  to
+: 1242 2 69  hell
+E
+corrected by Munin
+Made by Hollyhad
+
