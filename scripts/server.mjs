@@ -1,8 +1,9 @@
 import http from 'node:http';
-import {createReadStream, readFileSync, existsSync} from 'node:fs';
+import {createReadStream, readFileSync, existsSync, readdirSync} from 'node:fs';
 import {stat} from 'node:fs/promises';
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
+import {parseCorpusFile} from '../dist/engine.js';
 const root = fileURLToPath(new URL('../dist/', import.meta.url));
 const index = path.join(root, 'data/library.json');
 // Song folders stay where they are; only the indexed roots are exposed, read-only.
@@ -21,10 +22,32 @@ function resolve(name) {
   return file.startsWith(base) ? file : null;
 }
 
+// Локально список датасетов строится на лету: положил .txt в dist/corpora,
+// обновил страницу — он в игре. Никаких команд. На GitHub Pages сервера нет,
+// поэтому там тот же список собирает сборка перед публикацией.
+function corporaIndex(){
+  const folder=path.join(root,'corpora');
+  if(!existsSync(folder))return [];
+  return readdirSync(folder)
+    .filter(name=>name.endsWith('.txt'))
+    .sort()
+    .map(file=>{
+      const id=file.replace(/\.txt$/,'');
+      let meta={};
+      try{meta=parseCorpusFile(readFileSync(path.join(folder,file),'utf8')).meta;}catch{}
+      return {id,file,name:meta.name||id,about:meta.about||'',language:meta.language||'ru'};
+    });
+}
+
 http.createServer(async (req,res)=>{
   try {
     if (!['GET','HEAD'].includes(req.method)) {res.writeHead(405);return res.end();}
     const name = decodeURIComponent(new URL(req.url,'http://localhost').pathname);
+    if (name === '/corpora/index.json') {
+      const body = Buffer.from(JSON.stringify(corporaIndex()), 'utf8');
+      res.writeHead(200, {'Content-Type': types['.json'], 'Content-Length': body.length, 'Cache-Control': 'no-store'});
+      return res.end(req.method === 'HEAD' ? undefined : body);
+    }
     const file = resolve(name);
     if (!file) {res.writeHead(403);return res.end();}
     const info = await stat(file);

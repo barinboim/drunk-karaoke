@@ -186,6 +186,48 @@ export function rhymeScore(a,b) {
 // A list file gives one record per line. Prose is cut at punctuation, so a
 // record is a finished clause rather than an arbitrary window of words.
 // ---------------------------------------------------------------------------
+/**
+ * Файл датасета самодостаточен: шапка с названием, потом записи по разделам,
+ * потом служебный раздел с ударениями. Достаточно положить такой файл в папку —
+ * ни кода, ни соседних файлов править не нужно.
+ *
+ * ---
+ * name: Отзывы на бытовую технику
+ * about: Покупатели изливают душу о пылесосах
+ * ---
+ *
+ * ## Разгневанный отзыв
+ * Пришёл с вмятиной на боку
+ *
+ * ## ~ударения
+ * гара́нтия
+ *
+ * Разделы, начинающиеся с «~», служебные: их содержимое не поётся.
+ */
+export function parseCorpusFile(source) {
+  const lines=String(source).replace(/^\uFEFF/,'').split('\n');
+  const meta={};
+  let at=0;
+  if(lines[0]?.trim()==='---'){
+    at=1;
+    while(at<lines.length&&lines[at].trim()!=='---'){
+      const split=lines[at].indexOf(':');
+      if(split>0)meta[lines[at].slice(0,split).trim().toLowerCase()]=lines[at].slice(split+1).trim();
+      at++;
+    }
+    at++;                                        // закрывающее «---»
+  }
+  const body=[],service=[];
+  let inService=false;
+  for(;at<lines.length;at++){
+    const row=lines[at];
+    const head=/^#{1,3}\s*(\S.*)$/.exec(row.trim());
+    if(head){inService=head[1].trim().startsWith('~');if(!inService)body.push(row);continue;}
+    (inService?service:body).push(row);
+  }
+  return {meta,text:body.join('\n'),accents:parseAccents(service.join('\n'))};
+}
+
 export function detectMode(text) {
   const rows=text.split('\n').map(r=>r.trim()).filter(Boolean);
   if(rows.length<8)return 'prose';

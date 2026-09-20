@@ -45,6 +45,9 @@ jobs:
         with:
           node-version: 22
 
+      - name: Собрать список датасетов
+        run: node scripts/corpora.mjs
+
       - name: Собрать список песен
         run: node scripts/library.mjs dist/songs
 

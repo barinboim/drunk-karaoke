@@ -1,4 +1,4 @@
-import {buildCorpus,analyzeSong,generate,parseAccents,withAccents,detectLanguage} from './engine.js';
+import {buildCorpus,analyzeSong,generate,parseCorpusFile,parseAccents,withAccents,detectLanguage} from './engine.js';
 
 // Русские ударения: OpenRussian плюс общее дополнение проекта.
 const baseReady=Promise.all([
@@ -6,39 +6,34 @@ const baseReady=Promise.all([
   fetch('data/accents.txt').then(r=>r.ok?r.text():'').catch(()=>''),
 ]).then(([base,extra])=>withAccents(new Map(Object.entries(base)),parseAccents(extra)));
 
-// У каждого датасета свой файл ударений — сборщики корпусов не правят общий.
-const extraCache=new Map();
 // CMUdict весит 3.6 МБ и нужен только англоязычным песням, поэтому тянем его лениво.
 let englishReady=null;
 const english=()=>englishReady??=fetch('data/cmudict.json')
   .then(r=>{if(!r.ok)throw Error('Словарь произношения не найден');return r.json();})
   .then(data=>new Map(Object.entries(data)));
 
-async function lexiconFor(url,needEnglish){
+// Ударения датасета лежат в нём самом, в служебном разделе. Общий accents.txt
+// остаётся для местоимений и служебных слов.
+async function lexiconFor(own,needEnglish){
   const base=await baseReady;
-  let ru=base;
-  if(url){
-    if(!extraCache.has(url))
-      extraCache.set(url,fetch(url).then(r=>r.ok?r.text():'').catch(()=>'').then(parseAccents));
-    ru=withAccents(base,await extraCache.get(url));
-  }
-  return {ru,en:needEnglish?await english():null};
+  return {ru:own?.size?withAccents(base,own):base,en:needEnglish?await english():null};
 }
 
 let state;
 self.onmessage=async({data})=>{
   try{
     const song=data.song||state?.song;
-    const text=data.text!==undefined?data.text:state?.text;
+    const source=data.text!==undefined?data.text:state?.source;
     // Только seed поменялся? Переиспользуем индекс и разбор песни, не собираем заново.
     const fresh=Boolean(data.song||data.text!==undefined);
     if(fresh){
-      if(!song||text===undefined)throw Error('Сначала выбери песню и корпус');
-      const needEnglish=song.language==='en'||(text!==''&&detectLanguage(text)==='en');
-      const dictionary=await lexiconFor(data.accents,needEnglish);
+      if(!song||source===undefined)throw Error('Сначала выбери песню и корпус');
+      const parsed=parseCorpusFile(source);
+      const needEnglish=song.language==='en'||(parsed.text!==''&&detectLanguage(parsed.text)==='en');
+      const dictionary=await lexiconFor(parsed.accents,needEnglish);
       const lengths=[...new Set(song.lines.map(line=>line.notes.length))];
-      state={song,text,words:dictionary.ru.size,
-        corpus:buildCorpus(text,dictionary,{lengths,mode:data.mode}),
+      state={song,source,words:dictionary.ru.size,
+        corpus:buildCorpus(parsed.text,dictionary,{lengths,mode:data.mode}),
         analysis:analyzeSong(song,dictionary)};
     }
     if(!state)throw Error('Сначала выбери песню и корпус');

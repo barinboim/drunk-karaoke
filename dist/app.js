@@ -5,27 +5,13 @@ import {Studio} from './studio.js';
 const $=id=>document.getElementById(id);
 const audio=$('audio');
 const PER_PAGE=15;
-const CORPORA={
-  original:{name:'Оригинальный текст песни',plain:true},
-  reviews:{file:'data/reviews.txt',name:'Отзывы на бытовую технику'},
-  ali:{file:'data/ali.txt',name:'Товары с маркетплейса'},
-  pills:{file:'data/pills.txt',name:'Инструкция к лекарству'},
-  ads:{file:'data/ads.txt',name:'Доска объявлений'},
-  terms:{file:'data/terms.txt',name:'Пользовательское соглашение'},
-  utility:{file:'data/utility.txt',name:'Квитанция ЖКХ и подъезд'},
-  seeds:{file:'data/seeds.txt',name:'Каталог семян и рассады'},
-  label:{file:'data/label.txt',name:'Состав на этикетке'},
-  weather:{file:'data/weather.txt',name:'Прогноз погоды и пробки'},
-  spam:{file:'data/spam.txt',name:'Спам и мошенники'},
-  transit:{file:'data/transit.txt',name:'Объявления в транспорте'},
-  system:{file:'data/system.txt',name:'Уведомления и ошибки'},
-  recipes:{file:'data/recipes.txt',name:'Рецепты'},
-  menu:{file:'data/menu.txt',name:'Меню ресторанов'},
-};
+// Список датасетов приходит из dist/corpora/index.json — его собирает npm run corpora.
+// Чтобы добавить датасет, достаточно положить .txt в папку: код править не нужно.
+const CORPORA={original:{name:'Оригинальный текст песни',plain:true}};
 
 let library=[],filtered=[],page=0;
 let entry=null,song=null,version=[],stats=null;
-let corpusText='',corpusName='',corpusKey='ali',accentsUrl='';
+let corpusText='',corpusName='',corpusKey='';
 let seed=Number(localStorage.getItem('dk.seed'))||crypto.getRandomValues(new Uint32Array(1))[0];
 let offset=Number(localStorage.getItem('dk.offset'))||0;
 let showNext=localStorage.getItem('dk.next')!=='0';
@@ -36,7 +22,7 @@ let lastView='',audioObjectURL=null;
 const worker=new Worker('worker.js',{type:'module'}),pending=new Map();let requestId=0;
 worker.onmessage=({data})=>{const job=pending.get(data.id);if(!job)return;pending.delete(data.id);data.error?job.reject(Error(data.error)):job.resolve(data);};
 worker.onerror=()=>{for(const job of pending.values())job.reject(Error('Не удалось запустить локальный подбор текста.'));pending.clear();};
-const compute=payload=>new Promise((resolve,reject)=>{const id=++requestId;pending.set(id,{resolve,reject});worker.postMessage({accents:accentsUrl,...payload,id});});
+const compute=payload=>new Promise((resolve,reject)=>{const id=++requestId;pending.set(id,{resolve,reject});worker.postMessage({...payload,id});});
 
 /* ---------- small helpers ---------- */
 const time=t=>`${Math.floor(Math.max(0,t)/60)}:${String(Math.floor(Math.max(0,t)%60)).padStart(2,'0')}`;
@@ -198,14 +184,13 @@ async function openSong(item,mode='live'){
   finally{busy(false);applyFilter();}
 }
 async function loadCorpus(key){
-  if(CORPORA[key].plain){corpusName=CORPORA[key].name;corpusKey=key;corpusText='';accentsUrl='';return;}
-  // На опубликованной версии часть корпусов может отсутствовать — говорим об этом прямо.
+  if(CORPORA[key].plain){corpusName=CORPORA[key].name;corpusKey=key;corpusText='';return;}
   let text;
   try{text=await read(CORPORA[key].file);}
-  catch{throw Error(`Корпус «${CORPORA[key].name}» есть только в локальной версии. Выбери другой или загрузи свой .txt.`);}
+  catch{throw Error(`Датасет «${CORPORA[key].name}» не загрузился. Выполни npm run corpora или загрузи свой .txt.`);}
   corpusName=CORPORA[key].name;corpusKey=key;corpusText=text;
-  accentsUrl=CORPORA[key].file.replace(/([^/]+)\.txt$/,'accents-$1.txt');
 }
+
 async function reroll(nextSeed,payload={}){
   busy(true);
   try{
@@ -481,7 +466,7 @@ $('corpusFile').addEventListener('change',async event=>{
   try{
     const text=await fileText(file);
     if(song&&!await reroll(crypto.getRandomValues(new Uint32Array(1))[0],{song,text}))return;
-    corpusText=text;corpusName=file.name.replace(/\.txt$/i,'');corpusKey='custom';accentsUrl='';
+    corpusText=text;corpusName=file.name.replace(/\.txt$/i,'');corpusKey='custom';
     const option=[...$('corpus').options].find(o=>o.value==='custom')||new Option(corpusName,'custom');
     option.textContent=corpusName;if(!option.parentNode)$('corpus').append(option);
     $('corpus').value='custom';
@@ -541,6 +526,21 @@ const studio=new Studio({
 /* ---------- boot ---------- */
 (function frame(){update();studio.tick(audio.currentTime);requestAnimationFrame(frame);})();
 try{
+  // Датасеты: что лежит в папке, то и в игре.
+  const manifest=await read('corpora/index.json','json').catch(()=>[]);
+  for(const item of manifest)
+    CORPORA[item.id]={file:`corpora/${item.file}`,name:item.name,about:item.about};
+  for(const select of [$('pickerCorpus'),$('corpus')]){
+    select.replaceChildren();
+    // В карточке режима оригинал — галочка, а в игре его удобно включать списком.
+    if(select===$('corpus'))select.append(new Option(CORPORA.original.name,'original'));
+    for(const item of manifest){
+      const option=new Option(item.name,item.id);
+      if(item.about)option.title=item.about;
+      select.append(option);
+    }
+  }
+  if(!corpusKey)corpusKey=manifest[0]?.id||'original';
   let index=null;
   try{index=await read('data/library.json','json');}catch{index=null;}
   library=index?.songs||[];filtered=library;
