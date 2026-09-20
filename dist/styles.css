@@ -187,10 +187,11 @@ main{flex:1;min-height:0;width:100%;max-width:1180px;margin:0 auto;padding:14px 
   -webkit-background-clip:text;background-clip:text;color:transparent;
 }
 .syllable.sung{--p:100%}
-.original{margin:12px auto 0;max-width:820px;font-size:clamp(12px,1.4vw,16px);color:#7f867a;
+/* Иерархия строк: поём — белым с зелёной заливкой; как было в песне — крупно под ней,
+   это подсказка мотива, и мелким шрифтом она бесполезна; что будет дальше — мельче
+   и желтее, это справка на будущее, а не то, что поют сейчас. */
+.original{margin:12px auto 0;max-width:900px;font-size:clamp(17px,2.5vw,32px);color:#98a08f;
   filter:drop-shadow(2px 0 0 #000) drop-shadow(-2px 0 0 #000) drop-shadow(0 2px 0 #000) drop-shadow(0 -2px 0 #000)}
-/* Иерархия строк: поём — белым с зелёной заливкой, следом — тусклее и желтее,
-   а как было в песне — серым в самом низу, чтобы не спорило за внимание. */
 .next-line{margin:8px auto 0;max-width:900px;font-size:clamp(15px,2.1vw,27px);font-weight:700;color:#d9b83f;
   filter:drop-shadow(2px 0 0 #000) drop-shadow(-2px 0 0 #000) drop-shadow(0 2px 0 #000) drop-shadow(0 -2px 0 #000)}
 
