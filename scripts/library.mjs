@@ -97,7 +97,8 @@ roots.forEach(root=>{
     // смонтированы в dist только для разбора, а сами файлы остаются на CDN.
     const inside=isBundled(root);
     const url=file=>{
-      const parts=path.relative(inside?DIST:root,file).split(path.sep).map(encodeURIComponent).join('/');
+      // В dist путь начинается с songs/, а в корне ветки songs этого префикса нет.
+      const parts=path.relative(inside&&songsCdnBase?root:inside?DIST:root,file).split(path.sep).map(encodeURIComponent).join('/');
       if(inside&&songsCdnBase)return `${songsCdnBase}/${parts}`;
       return inside?parts:`library/${index}/${parts}`;
     };
