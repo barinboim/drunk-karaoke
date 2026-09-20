@@ -1,0 +1,296 @@
+#TITLE:First day of my life
+#ARTIST:The Rasmus
+#LANGUAGE:English
+#YEAR:2003
+#CREATOR:hectorcito0
+#MP3:The Rasmus - First day of my life (instrumental).mp3
+#COVER:The Rasmus - First day of my life.jpg
+#VIDEO:The Rasmus - First day of my life.avi
+#BPM:240
+#GAP:22500
+: 0 3 4 Feel
+: 4 5 4  like
+: 10 1 4  I'm
+: 12 3 3  ston
+: 16 10 1 ed
+- 33
+: 36 5 4 wanna
+: 42 3 4  be
+: 46 3 3  a
+: 50 14 -3 lone
+- 68
+: 70 5 6 just
+: 76 5 6  for
+: 82 3 4  a
+: 86 17 3  while
+: 105 8 -3  un
+: 114 12 -4 known
+- 136
+: 144 5 4 weeks
+: 150 3 4  on
+: 154 3 4  the
+: 158 14 1  road
+- 175
+: 177 3 4 a
+: 181 4 4  long
+: 186 3 4  way
+: 190 5 3  from
+* 196 10 -3  home
+- 210
+: 212 5 6 just
+: 218 3 6  shut
+: 222 3 6  off
+: 226 3 4  the
+: 230 20 3  phone
+- 262
+: 266 5 8 and
+: 272 3 6  you
+: 276 21 6  say
+: 299 6 4  I'll
+: 306 7 8  heal
+: 314 14 6  you
+- 334
+: 336 7 4 I'll
+: 344 13 3  always
+: 358 13 4 ~
+: 372 7 6  be
+: 380 18 3  yours
+- 407
+: 411 4 8 and
+: 416 5 8  you
+: 422 21 6  say
+: 446 5 4  I'll
+: 452 7 8  kill
+* 460 14 6  you
+- 481
+: 484 3 4 if
+: 488 9 9  I
+: 498 5 8  don't
+: 504 5 6  some
+: 510 5 4 thing
+: 516 13 8  wrong
+- 532
+: 534 7 8 yeah
+- 549
+: 552 7 8 yeah
+- 567
+: 570 28 8 yeah
+- 605
+: 608 7 9 still
+: 616 5 9  feels
+: 622 5 8  like
+: 628 5 9  the
+: 634 7 8  first
+: 642 22 6  time
+- 674
+: 682 3 8 to
+: 686 7 8  stand
+: 694 7 6  here
+: 702 3 4  by
+: 706 5 3  your
+: 712 26 2  side
+- 748
+: 756 4 9 to
+: 761 6 9 ge
+: 768 5 8 ther
+* 774 3 9  re
+* 778 7 8 gard
+* 786 24 6 less
+- 820
+: 828 3 8 we'll
+: 832 5 8  walk
+: 838 7 8  through
+: 846 3 6  the
+: 850 7 6  dark
+: 858 22 5 ness
+- 892
+: 896 7 9 still
+: 904 7 8  feels
+: 912 5 9  like
+: 918 3 8  the
+: 922 9 6  first
+: 932 9 4  day
+: 942 5 3  of
+: 948 9 1  my
+: 958 18 1  life
+- 1008
+: 1119 12 4 remember
+: 1132 3 3  the
+: 1136 12 1  times
+- 1152
+: 1154 3 4 to
+: 1158 4 4 ge
+: 1163 3 4 ther
+: 1167 2 3  we
+* 1170 12 -3  swore
+- 1191
+: 1194 9 6 never
+: 1204 5 6  give
+: 1210 15 3  up
+: 1227 8 -3  this
+: 1236 12 -4  life
+- 1260
+: 1264 7 4 still
+: 1272 5 4  hung
+: 1278 3 3 ing
+: 1282 15 1  on
+: 1300 7 4  still
+: 1308 7 4  going
+: 1316 14 -3  strong
+- 1336
+: 1339 4 6 here
+: 1344 3 6  I
+: 1348 3 4  be
+: 1352 20 3 long
+- 1382
+: 1389 4 8 and
+: 1394 27 6  maybe
+: 1422 7 4  I'm
+* 1430 5 8  cra
+* 1436 14 6 zy
+- 1455
+: 1457 4 4 but
+: 1462 3 4  I
+: 1466 7 3  just
+: 1474 11 4  can't
+: 1486 11 6  slow
+: 1498 22 3  down
+- 1530
+: 1534 3 8 and
+: 1538 27 6  maybe
+: 1566 7 4  I'm
+: 1574 7 8  cra
+: 1582 14 6 zy
+- 1601
+: 1603 3 4 but
+: 1607 3 4  at
+: 1611 8 9  least
+: 1620 6 8  I'm
+: 1627 8 6  still
+: 1636 17 8  around
+- 1654
+: 1656 7 8 yeah
+- 1671
+: 1674 7 8 yeah
+- 1689
+: 1692 28 8 yeah
+- 1729
+: 1732 5 9 still
+: 1738 7 9  feels
+: 1746 5 8  like
+: 1752 3 9  the
+: 1756 7 8  first
+* 1764 24 6  time
+- 1798
+: 1805 2 8 to
+: 1808 9 8  stand
+: 1818 5 6  here
+: 1824 3 4  by
+: 1828 5 3  your
+: 1834 26 2  side
+- 1870
+: 1878 4 9 to
+: 1883 6 9 ge
+: 1890 5 8 ther
+: 1896 3 9  re
+: 1900 7 8 gard
+: 1908 26 6 less
+- 1944
+: 1951 3 8 we'll
+: 1955 5 8  walk
+: 1961 6 8  through
+: 1968 3 6  the
+: 1972 9 6  dark
+: 1982 24 5 ness
+- 2016
+: 2020 7 9 still
+: 2028 5 9  feels
+: 2034 5 8  like
+: 2040 3 9  the
+: 2044 9 8  first
+: 2054 9 6  day
+: 2064 5 4  of
+: 2070 9 3  my
+* 2080 28 1  life
+- 2140
+: 2242 9 9 feels
+: 2252 5 9  like
+: 2258 3 8  the
+: 2262 9 9  first
+: 2272 9 8  day
+: 2282 7 6  of
+: 2290 7 4  my
+: 2298 10 8  life
+- 2312
+: 2314 9 9 feels
+: 2324 5 9  like
+: 2330 3 8  the
+: 2334 9 9  first
+: 2344 20 8  day
+- 2374
+: 2382 5 9 still
+: 2388 7 9  feels
+: 2396 5 8  like
+: 2402 3 9  the
+: 2406 9 8  first
+: 2416 9 6  day
+: 2426 7 4  of
+: 2434 7 3  my
+: 2442 8 6  life
+- 2453
+: 2455 6 9 still
+: 2462 7 9  feels
+: 2470 5 8  like
+: 2476 5 9  the
+: 2482 7 8  first
+* 2490 26 6  time
+- 2525
+: 2529 3 8 to
+: 2533 6 8  stand
+: 2540 5 6  here
+: 2546 5 4  by
+: 2552 5 3  your
+: 2558 22 2  side
+- 2590
+: 2602 4 9 to
+: 2607 6 9 ge
+: 2614 5 8 ther
+: 2620 5 9  re
+: 2626 7 8 gard
+: 2634 20 6 less
+- 2664
+: 2674 4 8 we'll
+: 2679 5 8  walk
+: 2685 8 8  through
+: 2694 3 6  the
+: 2698 7 6  dark
+: 2706 20 5 ness
+- 2736
+: 2744 6 9 still
+: 2751 7 9  feels
+: 2759 5 8  like
+: 2765 4 9  the
+: 2770 8 8  first
+: 2779 10 6  day
+: 2790 5 4  of
+: 2796 16 3  my
+- 2816
+: 2818 5 9 still
+: 2824 7 9  feels
+: 2832 5 8  like
+: 2838 3 9  the
+: 2842 9 8  first
+: 2852 9 6  day
+: 2862 5 4  of
+: 2868 16 3  my
+- 2888
+: 2890 5 9 still
+: 2896 7 9  feels
+: 2904 5 8  like
+: 2910 3 9  the
+: 2914 9 8  first
+: 2924 9 6  day
+: 2934 7 4  of
+: 2942 7 3  my
+: 2950 60 1  life
+E
