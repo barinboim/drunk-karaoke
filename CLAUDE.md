@@ -148,7 +148,7 @@ npm run corpora                      # проверить все датасет�
 | `dist/data/cmudict.json` | произношение английских слов, собирается `npm run cmudict` |
 | `scripts/library.mjs` | индексация папок с песнями |
 | `scripts/backdrops.mjs` | сбор фонов с Викисклада |
-| `scripts/check-corpus.mjs` | проверка датасета |
+| `scripts/corpora.mjs` | список датасетов и их проверка |
 
 ## Разбор UltraStar: чего не ломать
 
