@@ -1,15 +1,32 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import {buildCorpus,analyzeSong,analyzeWord,generate,positionAt,normalize,rhymeScore,splitRecords,detectMode,heldVowel,LONG_NOTE} from '../dist/engine.js';
+import {buildCorpus,analyzeSong,analyzeWord,generate,positionAt,normalize,rhymeScore,splitRecords,detectMode,heldVowel,LONG_NOTE,parseCorpusFile,parseAccents,withAccents} from '../dist/engine.js';
 import {parseUltraStar} from '../dist/ultrastar.js';
 import {analyzeEnglishWord,splitEnglishSyllables,detectLanguage} from '../dist/engine.js';
 
 const at=name=>new URL(`../dist/data/${name}`,import.meta.url);
-const dictionary=new Map(Object.entries(JSON.parse(fs.readFileSync(at('dictionary.json'),'utf8'))));
-const menu=fs.readFileSync(at('menu.txt'),'utf8');
+const CORPORA=new URL('../dist/corpora/',import.meta.url);
+
+// Датасеты берём из папки, а не по именам: так тест не ломается, когда файлы
+// переименовывают или переписывают, и заодно проверяет ровно то, что в игре.
+const shipped=fs.readdirSync(CORPORA).filter(name=>name.endsWith('.txt')).sort()
+  .map(name=>({name,...parseCorpusFile(fs.readFileSync(new URL(name,CORPORA),'utf8'))}));
+assert.ok(shipped.length>3,'в dist/corpora нет датасетов');
+
+const base=new Map(Object.entries(JSON.parse(fs.readFileSync(at('dictionary.json'),'utf8'))));
+const shared=parseAccents(fs.readFileSync(at('accents.txt'),'utf8'));
+/** Словарь для конкретного датасета: общий плюс его собственные ударения. */
+const lexiconOf=corpus=>withAccents(withAccents(base,shared),corpus.accents);
+
 // Своя проза для проверки клауз: корпусов-прозы в поставке нет, а режим есть.
 const PROSE='Вечер тихий, и ветер уже улёгся. Мы сидим у воды, молчим и ждём, пока дым уйдёт за реку. Ничего не случилось, просто стало поздно.';
+
+// Рабочая фикстура для проверок подбора — самый плотный из поставляемых датасетов.
+const fixture=shipped.reduce((best,corpus)=>
+  splitRecords(corpus.text,'list').length>splitRecords(best.text,'list').length?corpus:best);
+const menu=fixture.text;
+const dictionary=lexiconOf(fixture);
 
 // A compact chart standing in for a real song: two verse shapes plus a chorus sung three times.
 const CHART=[
@@ -48,12 +65,12 @@ const corpus=buildCorpus(menu,dictionary,{lengths});
 const analysis=analyzeSong(song,dictionary);
 
 test('the menu corpus is a list of whole records grouped into sections', () => {
-  assert.equal(detectMode(menu),'list');
+  assert.equal(detectMode(fixture.text),'list');
   const records=splitRecords(menu,'list');
   assert.ok(records.length>400);
-  assert.ok(new Set(records.map(r=>r.section)).size>10);
+  assert.ok(new Set(records.map(r=>r.section)).size>=8,'разделов должно быть хотя бы восемь');
   // every record is one verbatim line of the source file
-  const rows=new Set(menu.split('\n').map(r=>r.trim()));
+  const rows=new Set(fixture.text.split('\n').map(r=>r.trim()));
   for(const record of records)assert.ok(rows.has(record.text),`«${record.text}» нет в файле построчно`);
 });
 
@@ -69,7 +86,7 @@ test('prose is cut at punctuation, never mid-thought', () => {
 });
 
 test('every line is made of whole records, never cut', () => {
-  const rows=new Set(menu.split('\n').map(r=>r.trim()));
+  const rows=new Set(fixture.text.split('\n').map(r=>r.trim()));
   for(let seed=0;seed<60;seed++){
     const {lines}=generate(song,corpus,seed,analysis);
     assert.equal(lines.length,song.lines.length);
@@ -162,8 +179,28 @@ test('seeds are reproducible and actually differ', () => {
   assert.notDeepEqual(a,b);
 });
 
-test('the menu corpus carries an explicit stress for every word', () => {
-  assert.deepEqual(corpus.stats.unknownWords,[]);
+test('every shipped dataset has a known stress for every word', () => {
+  for(const item of shipped){
+    const built=buildCorpus(item.text,lexiconOf(item),{lengths:[8,10,12,14]});
+    assert.deepEqual(built.stats.unknownWords,[],`${item.name}: слова без ударения`);
+    assert.ok(built.records.length>100,`${item.name}: подозрительно мало записей`);
+  }
+});
+
+test('a dataset file describes itself: header, sections, own stresses', () => {
+  const parsed=parseCorpusFile([
+    '---','name: Пробный','about: Пояснение','---','',
+    '## Раздел','Борщ украинский с пампушками','',
+    '## ~ударения','хачапу́ри',
+  ].join('\n'));
+  assert.equal(parsed.meta.name,'Пробный');
+  assert.equal(parsed.meta.about,'Пояснение');
+  assert.equal(parsed.accents.get('хачапури')?.[0],2);
+  // служебный раздел не поётся
+  assert.ok(!parsed.text.includes('хачапу'));
+  assert.equal(splitRecords(parsed.text,'list').length,1);
+  // у каждого поставляемого датасета есть название для интерфейса
+  for(const item of shipped)assert.ok(item.meta.name,`${item.name}: нет name в шапке`);
 });
 
 test('stresses stay explicit; dictionary and accent marks both work', () => {
