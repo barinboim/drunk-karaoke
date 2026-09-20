@@ -97,16 +97,32 @@ function drawCover(ctx,image,width,height,zoom,focus){
   ctx.drawImage(image,x,y,w,h);
 }
 
-// Полосы «как на старом мониторе». Шаг в шесть пикселей на кадре 1920 — это 320 полос
-// толщиной в три пикселя: на телефоне вместо полос ровная серая пелена, да и кодек их
-// доедает. Шаг считается от высоты, чтобы на любом формате выходило шестьдесят крупных
-// полос. Читаемость от этого не страдает: текст рисуется поверх, а не под ними.
-function scanlines(ctx,width,height){
-  const pitch=Math.max(10,Math.round(height/60));
-  const band=Math.max(3,Math.round(pitch*.46));
+/**
+ * Сетка старого экрана — не полосы, а точечная матрица: кадр виден сквозь круглые точки,
+ * между ними чуть притемнено. Мягко, потому что край точки размыт градиентом, а не обрезан.
+ * Плитка строится один раз и повторяется узором: заливать узором целый кадр дешевле, чем
+ * рисовать десятки тысяч точек покадрово. Размер и плотность подобраны замером: сорок пять
+ * точек по высоте кадра, среднее затемнение 10.5% — заметно светлее прежних полос (16.6%),
+ * которые к тому же были жёсткими и слишком тёмными.
+ */
+function dotMask(ctx,height){
+  const cell=Math.max(12,Math.round(height/45));
+  const tile=document.createElement('canvas');
+  tile.width=tile.height=cell;
+  const paint=tile.getContext('2d');
+  const glow=paint.createRadialGradient(cell/2,cell/2,0,cell/2,cell/2,cell*.72);
+  glow.addColorStop(0,'rgba(0,0,0,0)');
+  glow.addColorStop(.40,'rgba(0,0,0,0)');
+  glow.addColorStop(1,'rgba(0,0,0,1)');
+  paint.fillStyle=glow;paint.fillRect(0,0,cell,cell);
+  return ctx.createPattern(tile,'repeat');
+}
+
+function dots(ctx,pattern,width,height){
+  if(!pattern)return;
   ctx.save();
-  ctx.globalAlpha=.36;ctx.fillStyle='#000';
-  for(let y=0;y<height;y+=pitch)ctx.fillRect(0,y,width,band);
+  ctx.globalAlpha=.38;ctx.fillStyle=pattern;
+  ctx.fillRect(0,0,width,height);
   ctx.restore();
 }
 
@@ -249,9 +265,13 @@ export async function renderVideo({
   const safeBottom=Math.round(height*(1-safe.bottom));
   const column=width-padX*2;
 
+  const mask=dotMask(ctx,height);
+
   const big=Math.round(width*(shape==='16:9'?.055:.072));
   const small=Math.round(big*.42);
   const head=Math.round(big*.58);
+  const siteSize=Math.round(head*.78);
+  const titleSize=Math.round(head*1.18);
   // Строка растёт вверх от этой линии, а под ней ещё две строки оригинала: считаем от
   // нижней границы сейф-зоны, чтобы подпись ленты ничего не накрыла.
   const textBottom=safeBottom-(showOriginal?small*3.4:small*.6);
@@ -280,11 +300,11 @@ export async function renderVideo({
       const held=slot?Math.min(1,Math.max(0,(now-slot.start)/(slot.end-slot.start))):0;
       drawCover(ctx,slot?images[slot.index]:null,width,height,1+held*.1,slot?focus[slot.index]:null);
       ctx.fillStyle='rgba(0,0,0,.18)';ctx.fillRect(0,0,width,height);
-      scanlines(ctx,width,height);
+      dots(ctx,mask,width,height);
 
       ctx.textBaseline='alphabetic';
-      // Шапка — столбик по центру внутри сейф-зоны: крупный логотип, под ним песня,
-      // под ней адрес. Логотип больше ни к чему не приклеен, адрес стоит отдельной строкой.
+      // Шапка — столбик по центру внутри сейф-зоны: логотип, под ним адрес сайта,
+      // под ним название песни. Всё крупно и по центру, ничего ни к чему не приклеено.
       ctx.textAlign='center';
       let top=safeTop;
       if(logo){
@@ -293,22 +313,22 @@ export async function renderVideo({
         ctx.drawImage(logo,(width-logoWidth)/2,top,logoWidth,logoHeight);
         top+=logoHeight;
       }
+      ctx.font=`${siteSize}px ${FONT}`;
+      top+=siteSize*1.35;
+      drawOutlined(ctx,'drunkaraoke.barinbo.im',width/2,top,Math.max(3,siteSize*.16),'#cfd6c6');
       if(title){
         // Длинное название сперва ужимаем кеглем и только потом, если не помогло, режем.
-        let size=head;
+        let size=titleSize;
         ctx.font=`bold ${Math.round(size)}px ${FONT}`;
-        while(size>head*.62&&ctx.measureText(title).width>column){
+        while(size>titleSize*.6&&ctx.measureText(title).width>column){
           size*=.94;ctx.font=`bold ${Math.round(size)}px ${FONT}`;
         }
         let shown=title;
         while(shown.length>6&&ctx.measureText(shown).width>column)shown=shown.slice(0,-2);
         if(shown!==title)shown=shown.trimEnd()+'…';
-        top+=size*1.3;
+        top+=size*1.32;
         drawOutlined(ctx,shown,width/2,top,Math.max(6,size*.2),'#ffe14d');
       }
-      ctx.font=`${Math.round(head*.46)}px ${FONT}`;
-      top+=head*.82;
-      drawOutlined(ctx,'drunkaraoke.barinbo.im',width/2,top,Math.max(3,head*.1),'#cfd6c6');
 
       const index=song.lines.findIndex(line=>now>=line.start&&now<line.end);
       const shown=index>=0?index:song.lines.findIndex(line=>line.start>now);

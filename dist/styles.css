@@ -129,8 +129,8 @@ main{flex:1;min-height:0;width:100%;max-width:1180px;margin:0 auto;padding:14px 
 .backdrop.fade{animation:dissolve 1.2s ease-in-out}
 @keyframes dissolve{0%{opacity:0;filter:blur(8px) brightness(1.6)}100%{opacity:1;filter:none}}
 .grain{position:absolute;inset:0;pointer-events:none;opacity:.10;mix-blend-mode:overlay;background-image:radial-gradient(#fff 1px,transparent 1px);background-size:3px 3px}
-/* Шаг в четыре пикселя сливается в серую пелену. Крупнее — и видно, что это полосы. */
-.scanlines{position:absolute;inset:0;pointer-events:none;opacity:.28;background:repeating-linear-gradient(rgba(0,0,0,0) 0 6px,rgba(0,0,0,.62) 6px 11px)}
+/* Точечная матрица, а не полосы: кадр виден сквозь круглые точки, между ними притемнено. */
+.scanlines{position:absolute;inset:0;pointer-events:none;opacity:.38;background-image:radial-gradient(circle at 50% 50%,rgba(0,0,0,0) 28%,rgba(0,0,0,.9) 72%);background-size:14px 14px}
 .tv-head,.tv-foot{position:absolute;left:0;right:0;display:flex;align-items:center;justify-content:space-between;gap:14px;padding:12px 18px;z-index:3;
   color:#eef2e6;text-shadow:2px 2px 0 #000,0 0 10px rgba(0,0,0,.9)}
 .tv-head{top:0;font-size:clamp(15px,1.5vw,21px)}
