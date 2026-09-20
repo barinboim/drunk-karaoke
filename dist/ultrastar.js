@@ -130,12 +130,21 @@ export function parseUltraStar(text,{voice='merge'}={}) {
   // восклицание тонет в стене текста. Если внутри строки стоит сильный знак и после
   // него настоящая пауза — это граница фразы, и строку надо разделить.
   const PHRASE_GAP=0.25;
+  // Вторая примета конца фразы — музыкальная, без всяких знаков: долгий распев,
+  // а за ним тишина. Так устроен, например, зачин «На заре». Пороги подобраны
+  // замером по всей коллекции: связка «распев плюс пауза» даёт 27 разрывов на
+  // 6766 строк, тогда как одна только пауза разносит разметку на 253 куска.
+  const HELD=1.5, HELD_GAP=0.5;
+  const endsPhrase=(note,next)=>{
+    const gap=next.start-note.end;
+    if(/[!?.…]\s*$/.test(note.text)&&gap>=PHRASE_GAP)return true;
+    return note.end-note.start>=HELD&&gap>=HELD_GAP;
+  };
   const split=[];
   for(const line of kept){
     let from=0;
     for(let i=0;i<line.notes.length-1;i++){
-      if(!/[!?.…]\s*$/.test(line.notes[i].text))continue;
-      if(line.notes[i+1].start-line.notes[i].end<PHRASE_GAP)continue;
+      if(!endsPhrase(line.notes[i],line.notes[i+1]))continue;
       const part=line.notes.slice(from,i+1);
       if(part.length){split.push(part);from=i+1;}
     }
