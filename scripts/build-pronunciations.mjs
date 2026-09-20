@@ -6,7 +6,6 @@ import {fileURLToPath} from 'node:url';
 
 const ROOT=fileURLToPath(new URL('..',import.meta.url));
 const CACHE=path.join(ROOT,'.cache/ipa-dict');
-const OUT=path.join(ROOT,'dist/data/pronunciations.json');
 const BASE='https://raw.githubusercontent.com/open-dict-data/ipa-dict/master/data';
 const SOURCES={fr:`${BASE}/fr_FR.txt`,de:`${BASE}/de.txt`};
 const LICENSE_URL='https://raw.githubusercontent.com/open-dict-data/ipa-dict/master/LICENSE';
@@ -20,7 +19,6 @@ const download=async(url,target)=>{
   fs.writeFileSync(target,Buffer.from(await response.arrayBuffer()));
 };
 
-const result={};
 for(const [language,url] of Object.entries(SOURCES)){
   const raw=path.join(CACHE,`${language}.txt`);
   await download(url,raw);
@@ -32,11 +30,10 @@ for(const [language,url] of Object.entries(SOURCES)){
     const ipa=pronunciations.split(/,\s*/)[0].trim().replace(/^\/(.*)\/$/,'$1');
     if(ipa)words[word]=ipa;
   }
-  result[language]=words;
+  fs.writeFileSync(path.join(ROOT,'dist/data',`pronunciations-${language}.json`),JSON.stringify(words),'utf8');
   console.log(`${language}: ${Object.keys(words).length.toLocaleString('ru')} слов`);
 }
 
-fs.writeFileSync(OUT,JSON.stringify(result),'utf8');
 const license=path.join(CACHE,'LICENSE');
 await download(LICENSE_URL,license);
 fs.writeFileSync(path.join(ROOT,'dist/data/IPA-DICT-LICENSE.txt'),[
@@ -44,4 +41,4 @@ fs.writeFileSync(path.join(ROOT,'dist/data/IPA-DICT-LICENSE.txt'),[
   'French source: fr_FR.txt; German source: de.txt',
   '',fs.readFileSync(license,'utf8'),
 ].join('\n'),'utf8');
-console.log(`Готово: ${(fs.statSync(OUT).size/1048576).toFixed(1)} МБ`);
+console.log('Готово: два отдельных словаря в dist/data');

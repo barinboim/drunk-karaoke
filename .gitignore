@@ -20,7 +20,7 @@ inspo/
 
 # CMUdict: 3.6 МБ, собирается npm run cmudict
 dist/data/cmudict.json
-dist/data/pronunciations.json
+dist/data/pronunciations-*.json
 .cache/ipa-dict/
 
 # Песни живут в отдельной ветке songs и подмешиваются при сборке сайта.

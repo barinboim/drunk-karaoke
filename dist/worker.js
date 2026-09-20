@@ -11,9 +11,9 @@ let englishReady=null;
 const english=()=>englishReady??=fetch('data/cmudict.json')
   .then(r=>{if(!r.ok)throw Error('Словарь произношения не найден');return r.json();})
   .then(data=>new Map(Object.entries(data)));
-let ipaReady=null;
-const ipa=()=>ipaReady??=fetch('data/pronunciations.json')
-  .then(r=>{if(!r.ok)throw Error('Словарь произношения не найден');return r.json();});
+const ipaReady=new Map();
+const ipa=language=>ipaReady.get(language)??ipaReady.set(language,fetch(`data/pronunciations-${language}.json`)
+  .then(r=>{if(!r.ok)throw Error('Словарь произношения не найден');return r.json();})).get(language);
 
 // Ударения датасета лежат в нём самом, в служебном разделе. Общий accents.txt
 // остаётся для местоимений и служебных слов.
@@ -22,8 +22,8 @@ async function lexiconFor(own,language){
   const result={ru:own?.size?withAccents(base,own):base,en:null,fr:null,de:null,language};
   if(language==='en')result.en=await english();
   if(language==='fr'||language==='de'){
-    const data=await ipa();
-    result[language]=new Map(Object.entries(data[language]||{}));
+    const data=await ipa(language);
+    result[language]=new Map(Object.entries(data));
   }
   return result;
 }

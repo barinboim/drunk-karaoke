@@ -15,9 +15,9 @@ const shared=parseAccents(read(path.join(ROOT,'dist/data/accents.txt')));
 const cmu=fs.existsSync(path.join(ROOT,'dist/data/cmudict.json'))
   ? new Map(Object.entries(JSON.parse(read(path.join(ROOT,'dist/data/cmudict.json')))))
   : null;
-const pronunciation=fs.existsSync(path.join(ROOT,'dist/data/pronunciations.json'))
-  ? JSON.parse(read(path.join(ROOT,'dist/data/pronunciations.json')))
-  : {};
+const pronunciation=language=>fs.existsSync(path.join(ROOT,'dist/data',`pronunciations-${language}.json`))
+  ? new Map(Object.entries(JSON.parse(read(path.join(ROOT,'dist/data',`pronunciations-${language}.json`)))))
+  : new Map();
 
 // Длины строк, которые реально встречаются в песнях: на них и проверяем достижимость.
 const LENGTHS=Array.from({length:24},(_,i)=>i+1);
@@ -35,7 +35,7 @@ for(const file of files){
   const parsed=parseCorpusFile(read(path.join(FOLDER,file)));
   const name=parsed.meta.name||id;
   const language=normalizeLanguage(parsed.meta.language)||detectLanguage(parsed.text);
-  const dictionary={ru:withAccents(base,withAccents(shared,parsed.accents)),en:cmu,fr:new Map(Object.entries(pronunciation.fr||{})),de:new Map(Object.entries(pronunciation.de||{})),language};
+  const dictionary={ru:withAccents(base,withAccents(shared,parsed.accents)),en:cmu,fr:pronunciation('fr'),de:pronunciation('de'),language};
 
   let corpus;
   try{corpus=buildCorpus(parsed.text,dictionary,{lengths:LENGTHS,mode:parsed.meta.mode,language});}
