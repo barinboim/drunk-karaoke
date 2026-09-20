@@ -16,6 +16,9 @@ const DEFAULTS=[
   path.join(ROOT,'Альянс - На Заре'),
 ];
 const roots=(process.argv.slice(2).length?process.argv.slice(2):DEFAULTS).map(p=>path.resolve(p)).filter(p=>fs.existsSync(p));
+// При публикации песни живут в отдельной ветке и раздаются jsDelivr.
+// Локально переменная не задана, поэтому ссылки остаются обычными.
+const songsCdnBase=(process.env.SONGS_CDN_BASE||'').replace(/\/+$/,'');
 
 const walk=dir=>fs.readdirSync(dir,{withFileTypes:true}).flatMap(entry=>{
   const full=path.join(dir,entry.name);
@@ -90,10 +93,12 @@ roots.forEach(root=>{
     const named=parsed.media.cover&&images.find(f=>path.basename(f).toLowerCase()===parsed.media.cover.toLowerCase().trim());
     const cover=named||images.sort((a,b)=>fs.statSync(a).size-fs.statSync(b).size)[0];
     // Песня внутри dist адресуется относительным путём — он одинаково работает
-    // и у локального сервера, и на GitHub Pages. Всё остальное отдаёт /library/<корень>/.
+    // и у локального сервера, и на GitHub Pages. В CI песни могут быть временно
+    // смонтированы в dist только для разбора, а сами файлы остаются на CDN.
     const inside=isBundled(root);
     const url=file=>{
       const parts=path.relative(inside?DIST:root,file).split(path.sep).map(encodeURIComponent).join('/');
+      if(inside&&songsCdnBase)return `${songsCdnBase}/${parts}`;
       return inside?parts:`library/${index}/${parts}`;
     };
     songs.push({
