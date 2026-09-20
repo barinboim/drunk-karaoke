@@ -1,4 +1,4 @@
-import {positionAt,originalVersion} from './engine.js';
+import {positionAt,originalVersion,parseCorpusFile} from './engine.js';
 import {parseUltraStar} from './ultrastar.js';
 import {Studio} from './studio.js';
 
@@ -171,7 +171,8 @@ async function openSong(item,mode='live'){
     const chart=await read(item.chart);
     const next=parseUltraStar(chart);
     if(!corpusText)await loadCorpus(corpusKey);
-    const done=await reroll(crypto.getRandomValues(new Uint32Array(1))[0],{song:next,text:corpusText,mode:undefined});
+    const corpusMode=corpusKey==='original'?undefined:parseCorpusFile(corpusText).meta.mode;
+    const done=await reroll(crypto.getRandomValues(new Uint32Array(1))[0],{song:next,text:corpusText,mode:corpusMode});
     if(!done)return;
     entry=item;song=next;vocalOn=false;cuedLine=-1;stopHear();shuffleBackdrops();$('corpus').value=corpusKey;studio.open(mode,micId);
     if(audioObjectURL){URL.revokeObjectURL(audioObjectURL);audioObjectURL=null;}
@@ -351,9 +352,15 @@ function paintVocal(){
   const button=$('vocalToggle');
   const has=Boolean(entry?.vocal&&entry?.audio&&entry.vocal!==entry.audio);
   button.disabled=!has;
-  button.innerHTML=vocalOn?'<span class="glyph">♪</span> Минус':'<span class="glyph">♪</span> Плюс';
+  // Кнопка всегда подписана «Плюс» и работает выключателем: горит зелёным — звучит вокал,
+  // погасла — минусовка. Прежняя подпись менялась на «Минус» и читалась ровно наоборот:
+  // как название того, что играет сейчас, а не того, что будет по нажатию.
+  button.innerHTML='<span class="glyph">♪</span> Плюс';
+  button.classList.toggle('blue',has&&vocalOn);
+  button.setAttribute('aria-pressed',String(has&&vocalOn));
   button.title=has
-    ?(vocalOn?'Сейчас звучит версия с вокалом — вернуться к минусовке':'Послушать, как поётся: версия с вокалом')
+    ?(vocalOn?'Плюс включён: звучит версия с вокалом. Нажми, чтобы вернуться к минусовке'
+             :'Включить плюс: послушать, как эту песню поют')
     :'У этой песни в папке только одна дорожка';
 }
 // Одна музыкальная фраза с вокалом, поверх ничего: слышно, как её тянуть.

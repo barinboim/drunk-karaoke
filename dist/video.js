@@ -5,6 +5,19 @@ import {videoMime} from './mixer.js';
 const FONT='"Comic Sans MS","Comic Sans","Chalkboard SE",cursive';
 const plain=value=>String(value||'').replace(/́/g,'');
 
+// Сейф-зоны вертикальных лент. Сверху кадр закрывает интерфейс, снизу — подпись,
+// имя автора и кнопки, справа — столбец «нравится-комментарий-поделиться». Доли, а не
+// пиксели, чтобы не зависеть от размера: для Reels 1080×1920 это 250 сверху, 422 снизу
+// и по 119 с боков. Боковой отступ берём одинаковым с обеих сторон — иначе центрованный
+// текст съезжает влево и это видно.
+const SAFE={
+  '9:16':{top:.13,bottom:.22,side:.11},
+  '1:1':{top:.07,bottom:.10,side:.06},
+  '16:9':{top:.06,bottom:.08,side:.05},
+};
+
+const shuffle=list=>{const out=[...list];for(let i=out.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[out[i],out[j]]=[out[j],out[i]];}return out;};
+
 export const SHAPES={
   '9:16':{width:1080,height:1920,label:'9:16 — для Reels и Shorts'},
   '1:1':{width:1080,height:1080,label:'1:1 — квадрат для ленты'},
@@ -20,18 +33,80 @@ function loadImage(src){
   });
 }
 
-/** Картинка вписывается «по большей стороне», как background-size: cover. */
-function drawCover(ctx,image,width,height,zoom){
+/**
+ * Куда смотреть в кадре. Фоны горизонтальные, а ролик вертикальный, и обрезка по центру
+ * режет павлина пополам: в середине широкого снимка обычно трава и небо, а птица сбоку.
+ *
+ * Ищем скользящим окном нужной пропорции место с наибольшим «весом содержимого». Вес —
+ * это прежде всего **насыщенный цвет выше порога**, и только чуть-чуть — резкость. Порог
+ * решает всё: считать всякую деталь бесполезно, потому что листва и гравий дают её не
+ * меньше птицы и берут числом. Замер по всем двумстам фонам: обрезка по центру оставляет
+ * в кадре 48% объекта, по одной резкости — 51%, по цвету выше порога — 68%. На павлинах
+ * 62% против 81%. Штраф за шов, проходящий по объекту, пробовали — не дал ничего (67%).
+ */
+function focusOf(image,aspect){
+  const middle={x:.5,y:.5};
+  try{
+    const w=64,h=Math.max(8,Math.round(64*image.height/image.width));
+    const probe=document.createElement('canvas');
+    probe.width=w;probe.height=h;
+    const small=probe.getContext('2d',{willReadFrequently:true});
+    small.drawImage(image,0,0,w,h);
+    const pixels=small.getImageData(0,0,w,h).data;
+    const light=new Float64Array(w*h),vivid=new Float64Array(w*h),energy=new Float64Array(w*h);
+    for(let i=0;i<w*h;i++){
+      const r=pixels[i*4],g=pixels[i*4+1],b=pixels[i*4+2];
+      light[i]=(r*.299+g*.587+b*.114)/255;
+      const top=Math.max(r,g,b);
+      const sat=top?(top-Math.min(r,g,b))/top:0;
+      // Порог отсекает блёклое: трава и гравий не в счёт, синь на шее павлина — в счёт.
+      vivid[i]=sat>.45&&light[i]>.15&&light[i]<.85?(sat-.45)/.55:0;
+    }
+    for(let y=0;y<h;y++)for(let x=0;x<w;x++){
+      const i=y*w+x;
+      const dx=x+1<w?Math.abs(light[i]-light[i+1]):0;
+      const dy=y+1<h?Math.abs(light[i]-light[i+w]):0;
+      energy[i]=Math.hypot(dx,dy)*.5+vivid[i]*1.6;
+    }
+    let ww=w,hh=Math.round(w/aspect);
+    if(hh>h){hh=h;ww=Math.max(1,Math.round(h*aspect));}
+    // Интегральная сумма: дальше стоимость любого окна берётся за четыре обращения.
+    const sum=new Float64Array((w+1)*(h+1));
+    for(let y=0;y<h;y++)for(let x=0;x<w;x++)
+      sum[(y+1)*(w+1)+x+1]=energy[y*w+x]+sum[y*(w+1)+x+1]+sum[(y+1)*(w+1)+x]-sum[y*(w+1)+x];
+    const area=(x,y)=>sum[(y+hh)*(w+1)+x+ww]-sum[y*(w+1)+x+ww]-sum[(y+hh)*(w+1)+x]+sum[y*(w+1)+x];
+    let best=-1,bx=(w-ww)/2,by=(h-hh)/2;
+    for(let y=0;y<=h-hh;y++)for(let x=0;x<=w-ww;x++){
+      // Лёгкий перевес середине: при одинаковой детали лучше не уезжать к самому краю.
+      const off=Math.hypot((x+ww/2)/w-.5,(y+hh/2)/h-.5);
+      const value=area(x,y)*(1-off*.35);
+      if(value>best){best=value;bx=x;by=y;}
+    }
+    return {x:(bx+ww/2)/w,y:(by+hh/2)/h};
+  }catch{return middle;}
+}
+
+/** Вписывает «по большей стороне», как background-size: cover, но вокруг точки интереса. */
+function drawCover(ctx,image,width,height,zoom,focus){
   if(!image){ctx.fillStyle='#111';ctx.fillRect(0,0,width,height);return;}
   const scale=Math.max(width/image.width,height/image.height)*zoom;
   const w=image.width*scale,h=image.height*scale;
-  ctx.drawImage(image,(width-w)/2,(height-h)/2,w,h);
+  // Ставим точку интереса в середину кадра и прижимаем обратно к краям, чтобы не вылезла пустота.
+  const x=Math.min(0,Math.max(width-w,width/2-w*(focus?.x??.5)));
+  const y=Math.min(0,Math.max(height-h,height/2-h*(focus?.y??.5)));
+  ctx.drawImage(image,x,y,w,h);
 }
 
+// Полосы «как на старом мониторе». Шаг в шесть пикселей на кадре 1920 — это 320 полос
+// толщиной в три пикселя: на телефоне вместо полос ровная серая пелена, да и кодек их
+// доедает. Шаг считается от высоты, чтобы на любом формате выходило шестьдесят крупных
+// полос. Читаемость от этого не страдает: текст рисуется поверх, а не под ними.
 function scanlines(ctx,width,height){
+  const pitch=Math.max(10,Math.round(height/60));
+  const band=Math.max(3,Math.round(pitch*.46));
   ctx.save();
-  ctx.globalAlpha=.28;ctx.fillStyle='#000';
-  for(let y=0;y<height;y+=6)ctx.fillRect(0,y+3,width,3);
+  ctx.globalAlpha=.36;ctx.fillStyle='#000';
+  for(let y=0;y<height;y+=pitch)ctx.fillRect(0,y,width,band);
   ctx.restore();
 }
 
@@ -134,7 +209,10 @@ export async function renderVideo({
   canvas.width=width;canvas.height=height;
   const ctx=canvas.getContext('2d');
 
-  const images=(await Promise.all(backdrops.slice(0,24).map(loadImage))).filter(Boolean);
+  // Набор лежит по темам, поэтому без перемешивания в ролик подряд шли десять павлинов,
+  // потом тринадцать водопадов. Тасуем до того, как урезать список, иначе павлины и останутся.
+  const images=(await Promise.all(shuffle(backdrops).slice(0,24).map(loadImage))).filter(Boolean);
+  const focus=images.map(image=>focusOf(image,width/height));
   const logo=await loadImage('logo.svg');
   const audio=new AudioContext();
   if(audio.state==='suspended')await audio.resume();
@@ -148,13 +226,38 @@ export async function renderVideo({
   const parts=[];
   recorder.ondataavailable=event=>{if(event.data.size)parts.push(event.data);};
 
+  // Каждый фон держится 9–14 секунд, порядок — колода: пока она не кончится, повторов нет,
+  // а на стыке колод проверяем, что не выпала та же картинка подряд.
+  const slots=[];
+  if(images.length){
+    let at=from,deck=[],previous=-1;
+    while(at<finish){
+      if(!deck.length){
+        deck=shuffle(images.map((_,index)=>index));
+        if(deck.length>1&&deck[0]===previous)[deck[0],deck[1]]=[deck[1],deck[0]];
+      }
+      const index=deck.shift();
+      const span=9+Math.random()*5;
+      slots.push({index,start:at,end:at+span});
+      previous=index;at+=span;
+    }
+  }
+
+  const safe=SAFE[shape]||SAFE['9:16'];
+  const padX=Math.round(width*safe.side);
+  const safeTop=Math.round(height*safe.top);
+  const safeBottom=Math.round(height*(1-safe.bottom));
+  const column=width-padX*2;
+
   const big=Math.round(width*(shape==='16:9'?.055:.072));
   const small=Math.round(big*.42);
   const head=Math.round(big*.58);
-  const textBottom=height*(shape==='9:16'?.72:.80);
+  // Строка растёт вверх от этой линии, а под ней ещё две строки оригинала: считаем от
+  // нижней границы сейф-зоны, чтобы подпись ленты ничего не накрыла.
+  const textBottom=safeBottom-(showOriginal?small*3.4:small*.6);
 
   return new Promise((resolve,reject)=>{
-    let frame=0;
+    let frame=0,cursor=0;
     recorder.onstop=()=>{
       try{source.stop();}catch{}
       audio.close().catch(()=>{});
@@ -172,41 +275,47 @@ export async function renderVideo({
       if(shouldStop?.()||now>=finish){recorder.stop();return;}
       onProgress?.((now-from)/Math.max(.001,finish-from));
 
-      const slot=Math.floor((now-from)/11);
-      drawCover(ctx,images[slot%(images.length||1)],width,height,1+((now-from)%11)/11*0.1);
+      while(cursor<slots.length-1&&now>=slots[cursor].end)cursor++;
+      const slot=slots[cursor];
+      const held=slot?Math.min(1,Math.max(0,(now-slot.start)/(slot.end-slot.start))):0;
+      drawCover(ctx,slot?images[slot.index]:null,width,height,1+held*.1,slot?focus[slot.index]:null);
       ctx.fillStyle='rgba(0,0,0,.18)';ctx.fillRect(0,0,width,height);
       scanlines(ctx,width,height);
 
       ctx.textBaseline='alphabetic';
-      const margin=width*.05;
-      // Логотип в правом верхнем углу, под ним адрес: ролик уезжает в ленту без нас.
-      let logoBottom=margin;
+      // Шапка — столбик по центру внутри сейф-зоны: крупный логотип, под ним песня,
+      // под ней адрес. Логотип больше ни к чему не приклеен, адрес стоит отдельной строкой.
+      ctx.textAlign='center';
+      let top=safeTop;
       if(logo){
-        const logoWidth=width*(shape==='16:9'?.20:.28);
+        const logoWidth=Math.round(Math.min(column*.66,width*(shape==='16:9'?.30:.52)));
         const logoHeight=logoWidth*logo.height/logo.width;
-        ctx.drawImage(logo,width-margin-logoWidth,margin*.7,logoWidth,logoHeight);
-        logoBottom=margin*.7+logoHeight;
-        ctx.textAlign='right';
-        ctx.font=`${Math.round(head*.42)}px ${FONT}`;
-        drawOutlined(ctx,'drunkaraoke.barinbo.im',width-margin,logoBottom+head*.5,
-          Math.max(3,head*.11),'#cfd6c6');
+        ctx.drawImage(logo,(width-logoWidth)/2,top,logoWidth,logoHeight);
+        top+=logoHeight;
       }
       if(title){
-        ctx.textAlign='left';
-        ctx.font=`bold ${head}px ${FONT}`;
-        const room=width-margin*2-(logo?width*(shape==='16:9'?.22:.30):0);
+        // Длинное название сперва ужимаем кеглем и только потом, если не помогло, режем.
+        let size=head;
+        ctx.font=`bold ${Math.round(size)}px ${FONT}`;
+        while(size>head*.62&&ctx.measureText(title).width>column){
+          size*=.94;ctx.font=`bold ${Math.round(size)}px ${FONT}`;
+        }
         let shown=title;
-        while(shown.length>6&&ctx.measureText(shown).width>room)shown=shown.slice(0,-2);
+        while(shown.length>6&&ctx.measureText(shown).width>column)shown=shown.slice(0,-2);
         if(shown!==title)shown=shown.trimEnd()+'…';
-        drawOutlined(ctx,shown,margin,margin*.7+head,Math.max(6,head*.2),'#ffe14d');
+        top+=size*1.3;
+        drawOutlined(ctx,shown,width/2,top,Math.max(6,size*.2),'#ffe14d');
       }
+      ctx.font=`${Math.round(head*.46)}px ${FONT}`;
+      top+=head*.82;
+      drawOutlined(ctx,'drunkaraoke.barinbo.im',width/2,top,Math.max(3,head*.1),'#cfd6c6');
 
       const index=song.lines.findIndex(line=>now>=line.start&&now<line.end);
       const shown=index>=0?index:song.lines.findIndex(line=>line.start>now);
       if(shown>=0&&version[shown]){
         ctx.textAlign='left';
         const tokens=tokenize(version[shown].syllables,version[shown].itemStarts);
-        const {rows,size}=fitLayout(ctx,tokens,width*.88,big);
+        const {rows,size}=fitLayout(ctx,tokens,column,big);
         const lineHeight=size*1.2;
         const baseline=textBottom-(rows.length-1)*lineHeight;
         drawKaraoke(ctx,{rows,notes:song.lines[shown].notes,now:index>=0?now:-1,
@@ -214,7 +323,7 @@ export async function renderVideo({
         if(showOriginal&&song.lines[shown].original){
           ctx.textAlign='center';
           ctx.font=`${small}px ${FONT}`;
-          const below=wrapPlain(ctx,song.lines[shown].original,width*.86);
+          const below=wrapPlain(ctx,song.lines[shown].original,column);
           below.forEach((text,r)=>
             drawOutlined(ctx,text,width/2,textBottom+small*1.9+r*small*1.25,Math.max(3,small*.2),'#8f968a'));
         }

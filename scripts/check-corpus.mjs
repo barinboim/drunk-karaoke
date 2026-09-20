@@ -30,7 +30,7 @@ const dictionary={
 };
 
 const lengths=Array.from({length:24},(_,i)=>i+1);
-const corpus=buildCorpus(parsed.text,dictionary,{lengths});
+const corpus=buildCorpus(parsed.text,dictionary,{lengths,mode:parsed.meta.mode});
 const counts=corpus.records.map(record=>record.count);
 const median=counts.slice().sort((a,b)=>a-b)[counts.length>>1];
 const core=Math.round(100*counts.filter(c=>c>=8&&c<=16).length/counts.length);

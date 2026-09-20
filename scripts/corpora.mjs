@@ -35,7 +35,7 @@ for(const file of files){
   const dictionary={ru:withAccents(base,withAccents(shared,parsed.accents)),en:cmu};
 
   let corpus;
-  try{corpus=buildCorpus(parsed.text,dictionary,{lengths:LENGTHS});}
+  try{corpus=buildCorpus(parsed.text,dictionary,{lengths:LENGTHS,mode:parsed.meta.mode});}
   catch(error){console.log(`✗ ${file} — ${error.message}`);problems++;continue;}
 
   const unknown=new Set();

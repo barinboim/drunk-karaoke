@@ -22,8 +22,10 @@ const lexiconOf=corpus=>withAccents(withAccents(base,shared),corpus.accents);
 // Своя проза для проверки клауз: корпусов-прозы в поставке нет, а режим есть.
 const PROSE='Вечер тихий, и ветер уже улёгся. Мы сидим у воды, молчим и ждём, пока дым уйдёт за реку. Ничего не случилось, просто стало поздно.';
 
-// Рабочая фикстура для проверок подбора — самый плотный из поставляемых датасетов.
-const fixture=shipped.reduce((best,corpus)=>
+// Рабочая фикстура для проверок подбора — стабильный компактный корпус меню.
+// Реальные выгрузки могут содержать тысячи записей и не должны менять смысл
+// этих тестов, выбирая себя фикстурой только из-за размера.
+const fixture=shipped.find(corpus=>corpus.meta.name==='Меню ресторанов')||shipped.reduce((best,corpus)=>
   splitRecords(corpus.text,'list').length>splitRecords(best.text,'list').length?corpus:best);
 const menu=fixture.text;
 const dictionary=lexiconOf(fixture);
