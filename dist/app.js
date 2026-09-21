@@ -18,6 +18,15 @@ let offset=Number(localStorage.getItem('dk.offset'))||0;
 let showNext=localStorage.getItem('dk.next')!=='0';
 let showOriginal=localStorage.getItem('dk.original')!=='0';
 let lastView='',audioObjectURL=null;
+const idle=window.requestIdleCallback||((fn)=>setTimeout(fn,0));
+const coverObserver='IntersectionObserver' in window
+  ? new IntersectionObserver(entries=>entries.forEach(entry=>{
+      if(!entry.isIntersecting)return;
+      const face=entry.target,url=face.dataset.cover;
+      if(url)face.style.backgroundImage=`url("${url}")`;
+      coverObserver.unobserve(face);
+    }),{rootMargin:'120px'})
+  : null;
 
 /* ---------- worker ---------- */
 const worker=new Worker('worker.js',{type:'module'}),pending=new Map();let requestId=0;
@@ -59,7 +68,11 @@ function renderChannels(){
     const button=document.createElement('button');
     button.className='channel';button.title=`${item.artist} — ${item.title}`;
     const face=document.createElement('span');face.className='channel-face';
-    if(item.cover)face.style.backgroundImage=`url("${item.cover}")`;
+    if(item.cover){
+      face.dataset.cover=item.cover;
+      if(coverObserver)coverObserver.observe(face);
+      else idle(()=>face.style.backgroundImage=`url("${item.cover}")`);
+    }
     const label=document.createElement('span');label.className='channel-label';
     const title=document.createElement('b');title.textContent=item.title;
     const artist=document.createElement('i');artist.textContent=item.artist;
@@ -580,8 +593,11 @@ initFeedback(()=>({
 /* ---------- boot ---------- */
 (function frame(){update();studio.tick(audio.currentTime);requestAnimationFrame(frame);})();
 try{
-  // Датасеты: что лежит в папке, то и в игре.
-  const manifest=await read('corpora/index.json','json').catch(()=>[]);
+  // Датасеты: что лежит в папке, то и в игре. Независимые запросы идут параллельно.
+  const [manifest,index]=await Promise.all([
+    read('corpora/index.json','json').catch(()=>[]),
+    read('data/library.json','json').catch(()=>null),
+  ]);
   for(const item of manifest)
     CORPORA[item.id]={file:`corpora/${item.file}`,name:item.name,about:item.about};
   for(const select of [$('pickerCorpus'),$('corpus')]){
@@ -595,20 +611,23 @@ try{
     }
   }
   if(!corpusKey)corpusKey=manifest[0]?.id||'original';
-  let index=null;
-  try{index=await read('data/library.json','json');}catch{index=null;}
   library=index?.songs||[];filtered=library;
-  stock=await read('media/backdrops/index.json','json').then(list=>list.map(name=>`media/backdrops/${name}`)).catch(()=>[]);
-  for(const key of Object.keys(CORPORA)){
-    if(CORPORA[key].plain)continue;
-    try{await loadCorpus(key);break;}catch{}
-  }
+  // Библиотека появляется сразу. Обложки, фоны и корпус догружаются после первого кадра.
   applyFilter();
   showScreen('library');
   // Библиотеки нет — значит это опубликованная версия: зовём принести свою песню.
   // Спойлер со своей разметкой раскрыт сам, только если петь нечего: иначе он занимает строку.
   $('welcome').open=library.length===0;
   if(!library.length){$('libraryNote').textContent='';$('screenCount').textContent='';}
+  void Promise.all([
+    read('media/backdrops/index.json','json').then(list=>{stock=list.map(name=>`media/backdrops/${name}`);}).catch(()=>{}),
+    (async()=>{
+      for(const key of Object.keys(CORPORA)){
+        if(CORPORA[key].plain)continue;
+        try{await loadCorpus(key);break;}catch{}
+      }
+    })(),
+  ]);
 }catch(error){
   fail(error);
   $('libraryNote').textContent='Не удалось подготовить приложение.';
