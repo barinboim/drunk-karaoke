@@ -5,6 +5,7 @@
 #GENRE:Pop
 #YEAR:1992
 #MP3:Radiohead - Creep.mp3
+#INSTRUMENTAL:Radiohead - Creep (instrumental).mp3
 #COVER:Radiohead - Creep.jpg
 #VIDEO:Radiohead - Creep.avi
 #VIDEOGAP:0,3
