@@ -25,7 +25,7 @@ const PROSE='Вечер тихий, и ветер уже улёгся. Мы си
 // Рабочая фикстура для проверок подбора — стабильный компактный корпус меню.
 // Реальные выгрузки могут содержать тысячи записей и не должны менять смысл
 // этих тестов, выбирая себя фикстурой только из-за размера.
-const fixture=shipped.find(corpus=>corpus.meta.name==='Меню ресторанов')||shipped.reduce((best,corpus)=>
+const fixture=shipped.find(corpus=>corpus.meta.name==='Меню ресторанов')||shipped.find(corpus=>corpus.meta.name==='Рецепты')||shipped.reduce((best,corpus)=>
   splitRecords(corpus.text,'list').length>splitRecords(best.text,'list').length?corpus:best);
 const menu=fixture.text;
 const dictionary=lexiconOf(fixture);
