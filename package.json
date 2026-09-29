@@ -4,13 +4,19 @@
  "type": "module",
  "scripts": {
   "corpora": "node scripts/corpora.mjs",
+  "corpora-local": "node scripts/build-local-corpora.mjs && node scripts/corpora.mjs",
+  "corpora-marketplace": "node scripts/build-marketplace.mjs && node scripts/corpora.mjs",
+  "corpora-gazeta": "node scripts/build-gazeta-corpus.mjs && node scripts/corpora.mjs",
+  "corpora-mail-questions": "node scripts/build-yandex-q-corpus.mjs && node scripts/corpora.mjs",
+  "corpora-fas-local": "node scripts/build-fas-advertising.mjs && node scripts/corpora.mjs",
   "accents": "node scripts/accents.mjs",
   "check": "node scripts/check-corpus.mjs",
   "library": "node scripts/library.mjs",
   "backdrops": "node scripts/backdrops.mjs",
- "cmudict": "node scripts/build-cmudict.mjs",
- "pronunciations": "node scripts/build-pronunciations.mjs",
+  "cmudict": "node scripts/build-cmudict.mjs",
+  "pronunciations": "node scripts/build-pronunciations.mjs",
   "start": "node scripts/server.mjs",
-  "test": "node --test tests/*.test.mjs"
+  "test": "node --test tests/*.test.mjs",
+  "corpora-forums-local": "node scripts/build-forum-corpus.mjs && node scripts/corpora.mjs"
  }
 }

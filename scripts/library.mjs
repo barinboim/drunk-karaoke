@@ -48,7 +48,7 @@ const playable=file=>{
   for(let i=0;i<Math.min(buf.length-1,2048);i++)if(buf[i]===0xFF&&(buf[i+1]&0xE0)===0xE0)return true;
   return false;
 };
-const minusLike=name=>/минус|minus|instrumental|инструментал|^\+|^м[-_ ]|\bм[-_]/i.test(path.basename(name));
+const minusLike=name=>/минус|minus|instrumental|инструментал|^sm(?:[._ -]|$)|^\+|^м[-_ ]|\bм[-_]/i.test(path.basename(name));
 const duetLike=name=>/дуэт|duet/i.test(path.basename(name));
 const score=(file,kind)=>(minusLike(file)?4:0)+(kind==='chart'&&duetLike(file)?-3:0)+(/бэк|back/i.test(path.basename(file))?1:0);
 

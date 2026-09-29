@@ -66,7 +66,7 @@ const core=candidates.filter(row=>row.syllables>=8&&row.syllables<=16);
 const short=candidates.filter(row=>row.syllables<8);
 const long=candidates.filter(row=>row.syllables>16);
 function even(list,count){if(!count||!list.length)return[];const take=Math.min(list.length,count);return Array.from({length:take},(_,i)=>list[Math.floor(i*list.length/take)]);}
-const TARGET=6300; // запас покрывает строки, которые движок удаляет как неслышимые/повторные
+const TARGET=21000; // целевой игровой объём с небольшим запасом на фильтрацию движком
 const shortPreferred=short.filter(row=>row.syllables>=4);
 const shortTiny=short.filter(row=>row.syllables<4);
 const shortQuota=Math.max(0,TARGET-core.length-long.length);

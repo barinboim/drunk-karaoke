@@ -10,6 +10,8 @@ import * as arrow from 'apache-arrow';
 const ROOT = new URL('..', import.meta.url).pathname;
 const SRC = `${ROOT}.corpus-source/`;
 const OUT = `${ROOT}dist/corpora/`;
+const BUILD_ONLY = new Set((process.env.CORPORA_ONLY || '').split(',').filter(Boolean));
+const enabled = id => BUILD_ONLY.size === 0 || BUILD_ONLY.has(id);
 fs.mkdirSync(OUT, {recursive: true});
 
 // The game deliberately treats the shared accent dictionary as the judge, not
@@ -201,6 +203,7 @@ function sampleRows(rows, limit) {
 }
 
 function writeCorpus(file, name, about, sections, rows, source, limit = Infinity, extraMeta = {}) {
+  if (BUILD_ONLY.size && !BUILD_ONLY.has(file)) return {file, name, source, raw: rows.length, records: null};
   // Keep short but complete source entries too: the engine needs a small tail
   // of one-to-three-syllable records to close song lines after a long phrase.
   const good = sampleRows(dedupe(rows).filter(x => x.text.length >= 1 && hasKnownWords(x.text)), limit);
@@ -245,9 +248,39 @@ function filesUnder(directory) {
 
 const manifests = [];
 
+// Medication instructions: retain source indications as complete list items.
+// RuPharm-9k contains drug names and official indications from regulatory
+// registries; split only at semicolons and sentence-ending punctuation.
+if (enabled('pills') && fs.existsSync(`${SRC}rupharm-9k.csv`)) {
+  const sections = ['Показания к применению','Противопоказания и ограничения','Симптомы и состояния','Другое'];
+  const rows = [];
+  const sourceRows = parse(fs.readFileSync(`${SRC}rupharm-9k.csv`), {columns:true, skip_empty_lines:true, relax_quotes:true});
+  for (const record of sourceRows) {
+    const indications = String(record['показания'] || '');
+    for (const phrase of indications.split(/\s*;\s*|(?<=[.!?])\s+/u)) {
+      const text = clean(phrase).replace(/^[\s,;:.!?]+|[\s,;:.!?]+$/g, '').trim();
+      if (!text) continue;
+      const section = /противопоказ|не рекомендуется|нельзя|запрещено/i.test(text)
+        ? sections[1]
+        : /боль|лихорад|ринит|кашель|синдром|заболев|нарушен|инфекц|отравлен|аллерг|профилактик|лечение/i.test(text)
+          ? sections[2] : sections[0];
+      rows.push({text, section});
+    }
+  }
+  if (fs.existsSync(`${SRC}pills-base.txt`)) {
+    const parsed = fs.readFileSync(`${SRC}pills-base.txt`, 'utf8');
+    for (const phrase of parsed.split(/\r?\n/)) {
+      if (!phrase.trim() || phrase.startsWith('---') || phrase.startsWith('##') || /^(name|about|mode):/.test(phrase)) continue;
+      const text = clean(phrase);
+      if (text) rows.push({text, section:sections[3]});
+    }
+  }
+  manifests.push(writeCorpus('pills', 'Инструкция к лекарству', 'Реальные показания к применению из официальных карточек лекарств', sections, rows, 'https://huggingface.co/datasets/zxc0zxc0zxc/rupharm-9k (CC BY 4.0)', 21000));
+}
+
 // 0b. Open Food Facts Russian ingredient declarations (ODbL). Product name
 // and ingredient declaration are kept as separate source records.
-if (fs.existsSync(`${SRC}openfoodfacts-ru.json`)) {
+if (enabled('label') && fs.existsSync(`${SRC}openfoodfacts-ru.json`)) {
   const sections = ['Молочные продукты','Сладости','Напитки','Консервы и соусы','Колбасы и готовые блюда','Крупы и выпечка','Детское питание','Специальные продукты','Другое'];
   const rows = [];
   for (const product of JSON.parse(fs.readFileSync(`${SRC}openfoodfacts-ru.json`, 'utf8'))) {
@@ -259,11 +292,11 @@ if (fs.existsSync(`${SRC}openfoodfacts-ru.json`)) {
     if (!line || line.startsWith('-') || line.startsWith('#') || line.includes(': ') || line.startsWith('name') || line.startsWith('about') || line.startsWith('mode')) continue;
     const text = clean(line); if (text) rows.push({text, section:sectionBy(text, sections)});
   }
-  manifests.push(writeCorpus('label', 'Состав на этикетке', 'Реальные названия продуктов и составы с русских этикеток Open Food Facts', sections, rows, 'https://world.openfoodfacts.org (ODbL)', 5000));
+  manifests.push(writeCorpus('label', 'Состав на этикетке', 'Реальные названия продуктов и составы с русских этикеток Open Food Facts', sections, rows, 'https://world.openfoodfacts.org (ODbL)', 21000));
 }
 
 // 0a. Russian recipes from the MIT-licensed parser snapshot (~14k recipes).
-if (fs.existsSync(`${SRC}recipes-repo/storage/recipes`)) {
+if (enabled('recipes') && fs.existsSync(`${SRC}recipes-repo/storage/recipes`)) {
   const sections = ['Закуски','Салаты','Супы','Горячие блюда','Выпечка','Десерты','Напитки','Заготовки','Другое'];
   const rows = [];
   for (const file of filesUnder(`${SRC}recipes-repo/storage/recipes`).filter(x => x.endsWith('.json'))) {
@@ -275,13 +308,13 @@ if (fs.existsSync(`${SRC}recipes-repo/storage/recipes`)) {
     for (const part of clauses(recipe.description || '')) rows.push({text:part, section});
     for (const step of recipe.instruction || []) for (const part of clauses(step.text || step)) rows.push({text:part, section});
   }
-  manifests.push(writeCorpus('recipes', 'Рецепты', 'Реальные русские рецепты: названия, описания и шаги приготовления', sections, rows, 'https://github.com/chipslays/russian-recipes-parser (MIT)', 5000));
+  manifests.push(writeCorpus('recipes', 'Рецепты', 'Реальные русские рецепты: названия, описания и шаги приготовления', sections, rows, 'https://github.com/chipslays/russian-recipes-parser (MIT)', 21000));
 }
 
 // 0. Public Yandex Maps / Yandex Eats menu pages. The snapshot keeps the
 // exact dish title and the source description as separate records; no dish is
 // invented or stitched together.
-if (fs.existsSync(`${SRC}yandex-menus.json`)) {
+if (enabled('menu') && fs.existsSync(`${SRC}yandex-menus.json`)) {
   const sections = ['Салаты и закуски','Супы','Горячие блюда','Гарниры','Пицца и выпечка','Суши и роллы','Напитки','Десерты','Комбо и доставка'];
   const rows = [];
   for (const item of JSON.parse(fs.readFileSync(`${SRC}yandex-menus.json`, 'utf8'))) {
@@ -309,7 +342,7 @@ if (fs.existsSync(`${SRC}yandex-menus.json`)) {
 // 0c. Public Russian legal acts, sentence-level extract from the PlainDocument
 // XML snapshot. Legal act text is public; the source repository is retained in
 // the manifest for provenance.
-if (fs.existsSync(`${SRC}legal-repo/xml_test`)) {
+if (enabled('terms') && fs.existsSync(`${SRC}legal-repo/xml_test`)) {
   const sections = ['Суды и решения','Гражданское право','Административные нормы','Труд и социальная сфера','Налоги и финансы','Общие положения'];
   const rows = [];
   for (const file of filesUnder(`${SRC}legal-repo/xml_test`).filter(x => x.endsWith('.xml'))) {
@@ -322,12 +355,12 @@ if (fs.existsSync(`${SRC}legal-repo/xml_test`)) {
       for (const part of clauses(words)) rows.push({text:part, section:sectionBy(title, sections)});
     }
   }
-  manifests.push(writeCorpus('terms', 'Законы и постановления', 'Реальные формулировки российских судебных и нормативных актов', sections, rows, 'https://github.com/PlainDocument/Legal-texts-dataset (публичные тексты правовых актов)', 5000));
+  manifests.push(writeCorpus('terms', 'Законы и постановления', 'Реальные формулировки российских судебных и нормативных актов', sections, rows, 'https://github.com/PlainDocument/Legal-texts-dataset (публичные тексты правовых актов)', 21000));
 }
 
 // 0d. Open cultivar catalogue. Keep the exact cultivar names and descriptions
 // so absurd branded names remain visible instead of being normalised away.
-if (fs.existsSync(`${SRC}sortbase-seeds.json`)) {
+if (enabled('seeds') && fs.existsSync(`${SRC}sortbase-seeds.json`)) {
   const sections = ['Томаты','Огурцы и кабачки','Перцы и баклажаны','Зелень','Цветы','Ягодные и плодовые','Капуста и корнеплоды','Другое'];
   const rows = [];
   for (const item of JSON.parse(fs.readFileSync(`${SRC}sortbase-seeds.json`, 'utf8'))) {
@@ -343,18 +376,18 @@ if (fs.existsSync(`${SRC}sortbase-seeds.json`)) {
 }
 
 // 1. Yandex Maps / Geo Reviews (500k records, MIT snapshot mirror).
-{
+if (enabled('yandex')) {
   const table = arrow.tableFromIPC(parquet.readParquet(fs.readFileSync(`${SRC}geo.parquet`)).intoIPCStream());
   const text = table.getChild('text'), rubrics = table.getChild('rubrics'), rating = table.getChild('rating');
   const sections = ['Еда и напитки','Медицина','Жильё и районы','Магазины','Транспорт','Красота и услуги','Образование и культура','Остальное'];
   const rows = [];
   for (let i = 0; i < table.numRows; i++) for (const part of clauses(text.get(i))) rows.push({text:part, section:sectionBy(rubrics.get(i), sections)});
-  manifests.push(writeCorpus('yandex', 'Отзывы с Яндекс Карт', 'Реальные отзывы посетителей о российских организациях', sections, rows, 'https://github.com/yandex/geo-reviews-dataset-2023', 3000));
+  manifests.push(writeCorpus('yandex', 'Отзывы с Яндекс Карт', 'Реальные отзывы посетителей о российских организациях', sections, rows, 'https://github.com/yandex/geo-reviews-dataset-2023', 21000));
 }
 
 // 2. University VK posts/comments. The local snapshot may be a range slice;
 // every parsed row is still an exact source row from the CC BY 4.0 dataset.
-if (fs.existsSync(`${SRC}dean.csv.part`)) {
+if (enabled('dean') && fs.existsSync(`${SRC}dean.csv.part`)) {
   const rowsIn = parse(completeSnapshot(`${SRC}dean.csv.part`), {columns:true, skip_empty_lines:true, relax_quotes:true, relax_column_count:true, skip_records_with_error:true});
   const sections = ['Объявления','Учёба','События','Студенческие вопросы','Поздравления','Общежитие','Наука','Другое'];
   const rows = [];
@@ -364,27 +397,27 @@ if (fs.existsSync(`${SRC}dean.csv.part`)) {
 
 // 3. HeadHunter IT vacancy snapshot (CC BY 4.0). A row is kept as a whole:
 // job name plus the source key-skill field.
-if (fs.existsSync(`${SRC}hh.csv`)) {
+if (enabled('hh') && fs.existsSync(`${SRC}hh.csv`)) {
   const sections = ['Разработка','Администрирование','Аналитика','Тестирование','Данные','Поддержка','Управление','Другое'];
   const rows = [];
   for (const r of parse(completeSnapshot(`${SRC}hh.csv`), {columns:true, skip_empty_lines:true, relax_quotes:true, relax_column_count:true, skip_records_with_error:true})) {
     const value = [r.name, r.key_skills].filter(Boolean).join('. Навыки: ');
     for (const part of clauses(value)) rows.push({text:part, section:sectionBy(r.name, sections)});
   }
-  manifests.push(writeCorpus('hh', 'Вакансии с hh', 'Реальные объявления о работе и списки навыков с HeadHunter', sections, rows, 'https://figshare.com/articles/dataset/it_vacancy_data/19005092', 3000));
+  manifests.push(writeCorpus('hh', 'Вакансии с hh', 'Реальные объявления о работе и списки навыков с HeadHunter', sections, rows, 'https://figshare.com/articles/dataset/it_vacancy_data/19005092', 21000));
 }
 
 // 5. VK public-page comments collected through VK API.
-{
+if (enabled('vk')) {
   const rowsIn = parse(fs.readFileSync(`${SRC}vk-capitalization.csv`), {columns:true, skip_empty_lines:true, relax_quotes:true, relax_column_count:true, skip_records_with_error:true});
   const sections = ['Лента','Наука','История','Видео','Семья'];
   const rows = [];
   for (const r of rowsIn) for (const part of clauses(r.comment_text)) rows.push({text:part, section:sectionBy(r.source, sections)});
-  manifests.push(writeCorpus('vk', 'Паблики ВК', 'Комментарии пользователей под публичными страницами ВКонтакте', sections, rows, 'https://github.com/annnyway/capitalization', 3000));
+  manifests.push(writeCorpus('vk', 'Паблики ВК', 'Комментарии пользователей под публичными страницами ВКонтакте', sections, rows, 'https://github.com/annnyway/capitalization', 21000));
 }
 
 // 6. Wildberries reviews.
-{
+if (enabled('wb')) {
   const rowsIn = parse(fs.readFileSync(`${SRC}wb.csv`), {columns:true, skip_empty_lines:true, relax_quotes:true, relax_column_count:true});
   const sections = ['Электроника','Одежда и обувь','Красота','Дом','Дети','Спорт','Еда'];
   const rows = [];
@@ -392,37 +425,15 @@ if (fs.existsSync(`${SRC}hh.csv`)) {
     const value = r.text || r.pros || r.cons || '';
     for (const part of clauses(value)) rows.push({text:part, section:sections.includes(r.category_label) ? r.category_label : sectionBy(r.category_label, sections)});
   }
-  manifests.push(writeCorpus('wb', 'Отзывы WB', 'Реальные отзывы покупателей Wildberries', sections, rows, 'https://huggingface.co/datasets/Hplss/wb-review-dataset', 3000));
+  manifests.push(writeCorpus('wb', 'Отзывы WB', 'Реальные отзывы покупателей Wildberries', sections, rows, 'https://huggingface.co/datasets/Hplss/wb-review-dataset', 21000));
 }
 
-// 6b. Existing marketplace product-name corpus expanded with real Wildberries
-// product-card titles from the public-domain wb-products export. Reviews stay
-// in wb.txt; this block only reads the imt_name field (never review text).
-if (fs.existsSync(`${SRC}ali-base.txt`) && fs.existsSync(`${SRC}wb-products-5000.json`)) {
-  const sections = ['Телефоны и аксессуары','Одежда женская','Одежда мужская','Дом и кухня','Красота и здоровье','Инструменты и авто','Детское и игрушки','Сад, спорт и туризм','Описание, доставка и отзывы'];
-  const rows = [];
-  let section = sections[0];
-  for (const line of fs.readFileSync(`${SRC}ali-base.txt`, 'utf8').split(/\r?\n/)) {
-    const trimmed = line.trim();
-    if (!trimmed) continue;
-    if (trimmed.startsWith('## ')) { section = trimmed.slice(3).trim(); continue; }
-    if (trimmed.startsWith('---') || trimmed.startsWith('name:') || trimmed.startsWith('about:')) continue;
-    if (!trimmed.startsWith('#')) rows.push({text:trimmed, section:sections.includes(section) ? section : sections[0]});
-  }
-  for (const product of JSON.parse(fs.readFileSync(`${SRC}wb-products-5000.json`, 'utf8'))) {
-    // Keep the card title and its card-level colour variant only; descriptions
-    // and reviews are deliberately excluded from this product-name corpus.
-    const title = [product.imt_name, product.nm_colors_names].filter(Boolean).join(', ');
-    const normalized = clean(title);
-    const count = syllables(normalized);
-    if (normalized && count >= 1 && count <= 32 && /[А-Яа-яЁё]/.test(normalized))
-      rows.push({text:normalized, section:sectionBy(product.subj_root_name || product.subj_name, sections)});
-  }
-  manifests.push(writeCorpus('ali', 'Товары с маркетплейса', 'Реальные названия товарных карточек и варианты цвета Wildberries вместе с исходными товарными названиями', sections, rows, 'https://huggingface.co/datasets/nyuuzyou/wb-products (CC0)', 5000));
-}
+// Marketplace product corpus is rebuilt separately by build-marketplace.mjs.
+// Keep it title-only: unsourced ali-base examples and SKU colour variants do
+// not belong in a corpus presented as real product-card names.
 
 // 7. RuDReC annotated user drug reviews.
-{
+if (enabled('drugs')) {
   const sections = ['Эффект','Побочные реакции','Как принимали','Диагнозы','Самочувствие','Без результата','Аптека и врач','Другое'];
   const rows = [];
   for (const line of fs.readFileSync(`${SRC}rudrec.json`, 'utf8').split(/\r?\n/)) {
@@ -430,11 +441,11 @@ if (fs.existsSync(`${SRC}ali-base.txt`) && fs.existsSync(`${SRC}wb-products-5000
     let item; try { item = JSON.parse(line.replace(/\bNaN\b/g, 'null')); } catch { continue; }
     for (const part of clauses(item.text || '')) rows.push({text:part, section:sectionBy(item.file_name, sections)});
   }
-  manifests.push(writeCorpus('drugs', 'Отзывы на лекарства', 'Реальные пользовательские рассказы о лечении и побочных реакциях', sections, rows, 'https://github.com/cimm-kzn/RuDReC', 3000));
+  manifests.push(writeCorpus('drugs', 'Отзывы на лекарства', 'Реальные пользовательские рассказы о лечении и побочных реакциях', sections, rows, 'https://github.com/cimm-kzn/RuDReC', 21000));
 }
 
-// 8. Lenta headlines.
-{
+// 8. Lenta headlines (optional local source snapshot).
+if (enabled('headlines') && fs.existsSync(`${SRC}lenta.csv.gz`)) {
   const raw = zlib.gunzipSync(fs.readFileSync(`${SRC}lenta.csv.gz`));
   // The snapshot has 264k rows; keep the first 120k complete records. After
   // deduplication this is already far beyond what the browser needs, while
@@ -447,7 +458,7 @@ if (fs.existsSync(`${SRC}ali-base.txt`) && fs.existsSync(`${SRC}wb-products-5000
 }
 
 // 9. Russian Stack Overflow questions through the official public API.
-{
+if (enabled('stackoverflow')) {
   const items = JSON.parse(fs.readFileSync(`${SRC}stackoverflow.json`, 'utf8'));
   const sections = ['Питон и разработка','Веб-разработка','Базы данных','Алгоритмы','Сети','Системы','Мобильная разработка','Разное'];
   const rows = [];
@@ -455,12 +466,12 @@ if (fs.existsSync(`${SRC}ali-base.txt`) && fs.existsSync(`${SRC}wb-products-5000
     const value = `${item.title || ''}. ${item.body || ''}`;
     for (const part of clauses(value)) rows.push({text:part, section:sectionBy((item.tags || []).join(' '), sections)});
   }
-  manifests.push(writeCorpus('stackoverflow', 'Вопросы Stack Overflow', 'Реальные вопросы русскоязычного Stack Overflow', sections, rows, 'https://api.stackexchange.com/2.3/questions?site=ru.stackoverflow', 3000));
+  manifests.push(writeCorpus('stackoverflow', 'Вопросы Stack Overflow', 'Реальные вопросы русскоязычного Stack Overflow', sections, rows, 'https://api.stackexchange.com/2.3/questions?site=ru.stackoverflow', 21000));
 }
 
 // 10. RIA news sample: headlines plus first complete sentences from the same
 // real articles, yielding a more playable strange-news corpus.
-{
+if (enabled('strange-news')) {
   const sections = ['Политика','Общество','Происшествия','Мир','Экономика','Наука','Культура','Спорт'];
   const rows = [];
   for (const line of fs.readFileSync(`${SRC}ria1k.json`, 'utf8').split(/\r?\n/)) {
