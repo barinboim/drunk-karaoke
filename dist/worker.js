@@ -42,7 +42,9 @@ self.onmessage=async({data})=>{
       const dictionary=await lexiconFor(parsed.accents,language);
       const lengths=[...new Set(song.lines.map(line=>line.notes.length))];
       state={song,source,words:dictionary.ru.size,
-        corpus:buildCorpus(parsed.text,dictionary,{lengths,mode:data.mode,language}),
+        // Режим из шапки файла: смена датасета в списке режим не передаёт, а угадывание
+        // принимает длинные записи за прозу и режет их («анемия гипо- | и апластическая»).
+        corpus:buildCorpus(parsed.text,dictionary,{lengths,mode:data.mode||parsed.meta.mode,language}),
         analysis:analyzeSong(song,dictionary)};
     }
     if(!state)throw Error('Сначала выбери песню и корпус');

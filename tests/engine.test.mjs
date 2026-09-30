@@ -302,6 +302,11 @@ test('English words come from the pronouncing dictionary, not from spelling', ()
   // ритм английской строки держат односложные слова: WORDS are FLOW-ing OUT like END-less RAIN
   const meter='words are flowing out like endless rain'.split(' ').flatMap(word=>analyzeEnglishWord(word,cmu).stresses);
   assert.deepEqual(meter,[1,0,1,0,1,0,1,0,1],'служебное односложное слово безударно, знаменательное ударно');
+  // в конце строки служебное слово тянут и ударяют: «what we're supposed to BE»,
+  // а оборванное до переноса («It's not my / …») остаётся слабым
+  const ending=(text,slots)=>analyzeSong({language:'en',lines:[{original:text,notes:Array.from({length:slots},()=>({text:'',start:0,end:.3}))}]},{ru:new Map(),en:cmu}).templates[0].stresses.at(-1);
+  assert.equal(ending('supposed to be',4),1);
+  assert.equal(ending('it is not my',4),0);
   // деление написания восстанавливает слово целиком
   for(const word of ['abandon','beautiful','boulevard','yesterday','remember']){
     const parts=splitEnglishSyllables(word,analyzeEnglishWord(word,cmu).count);

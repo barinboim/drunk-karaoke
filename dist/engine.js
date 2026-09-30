@@ -54,6 +54,17 @@ const EN_WEAK=new Set(('a an the and or but nor as than that if of to in on at b
   "i'm i'll i've i'd you're you'll you've you'd he's she's it's we're we'll we've they're they'll they've "+
   "there's that's").split(' '));
 
+// В конце строки служебное слово ударно: его тянут («take on ME», «leave me BE», «what you
+// look FOR») — у 69% таких строк последняя нота длиннее средней. Слабым остаётся только то,
+// что обрывает фразу до переноса: «It's not my / …», «on the highway to / …», «walked out on a».
+const EN_WEAK_AT_END=new Set(("a an the my your his its our their and or but nor than as if to "+
+  "i'm you're he's she's it's we're they're that's there's i'll you'll we'll they'll i've you've we've they've i'd you'd").split(' '));
+/** Ударение последнего односложного слова английской строки. */
+export function englishLineEnd(token){
+  if(token?.count!==1||token.stresses[0]!==0)return token;
+  return EN_WEAK_AT_END.has(token.word.toLowerCase().replace(/[’‘]/g,"'"))?token:{...token,stresses:[1]};
+}
+
 export function analyzeEnglishWord(word,phonemes) {
   const key=word.toLowerCase().replace(/[^a-z']/g,'');
   const entry=key&&phonemes?.get(key);
@@ -407,6 +418,7 @@ export function analyzeSong(song,dictionary) {
   const language=song.language||detectLanguage(song.lines.map(said).join(' '));
   const templates=song.lines.map(line=>{
     const tokens=tokenize(said(line),dictionary,language);
+    if(language==='en'&&tokens.length)tokens[tokens.length-1]=englishLineEnd(tokens.at(-1));
     const stresses=tokens.flatMap(t=>t.stresses);
     const slots=line.notes.length;
     while(stresses.length<slots)stresses.push(.5);            // markup noise stays neutral instead of fatal
