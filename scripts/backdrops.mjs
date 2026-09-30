@@ -17,7 +17,8 @@ const run=promisify(execFile);
 const ROOT=fileURLToPath(new URL('..',import.meta.url));
 const OUT=path.join(ROOT,'dist/media/backdrops');
 const API='https://commons.wikimedia.org/w/api.php';
-const AGENT='DrunkKaraoke/1.0 (local hobby project; backdrop collector)';
+// Правила Викимедии требуют в User-Agent способ связаться: без него лимиты строже.
+const AGENT='DrunkKaraoke/1.0 (https://drunkaraoke.barinbo.im/; backdrop collector)';
 
 // Тот самый набор сюжетов с караоке-кассет: природа из заставки, туристические открытки,
 // умилительная живность и реквизит из ресторана, где стоит караоке-машина.
@@ -58,7 +59,8 @@ async function polite(url,{gap=2500,tries=8}={}){
     const since=Date.now()-lastCall;
     if(since<gap)await wait(gap-since);
     lastCall=Date.now();
-    const response=await fetch(url,{headers:{'User-Agent':AGENT}});
+    // Без таймаута оборванное соединение вешает весь сбор навсегда.
+    const response=await fetch(url,{headers:{'User-Agent':AGENT},signal:AbortSignal.timeout(60000)});
     if(response.status!==429&&response.status!==503)return response;
     const told=Number(response.headers.get('retry-after'));
     const pause=(Number.isFinite(told)&&told>0?told:3*2**attempt)*1000;
@@ -173,6 +175,21 @@ if(check){
 
 // Качаем по кругу, а не темами подряд: тогда предел набора обрезает все темы поровну,
 // а не выбрасывает хвост списка целиком.
+// Авторы пишутся после каждой картинки, а не в конце: прерванный сбор раньше оставлял
+// скачанные файлы без записи в CREDITS.json — их нельзя публиковать.
+function save(all){
+  // Порядок в index.json — вперемешку по темам. Потребители всё равно тасуют, но если
+  // кто-то возьмёт первые двадцать четыре подряд, пусть это будут двадцать четыре разные темы.
+  const byTopic=new Map();
+  for(const item of all)byTopic.set(item.topic,[...(byTopic.get(item.topic)||[]),item]);
+  const mixed=[];
+  for(let round=0;mixed.length<all.length;round++)
+    for(const items of byTopic.values())if(items[round])mixed.push(items[round]);
+  fs.writeFileSync(path.join(OUT,'index.json'),JSON.stringify(mixed.map(item=>item.file),null,1),'utf8');
+  fs.writeFileSync(creditsFile,JSON.stringify(mixed,null,1),'utf8');
+  return byTopic.size;
+}
+
 const fresh=[];
 let skipped=0;
 for(let round=0;round<QUOTA&&kept.length+fresh.length<WANTED;round++){
@@ -181,13 +198,16 @@ for(let round=0;round<QUOTA&&kept.length+fresh.length<WANTED;round++){
     const item=items[round];
     if(!item)continue;
     try{
-      const response=await polite(item.thumb,{gap:120});
+      // Картинки отдаёт upload.wikimedia.org: на 0.12 с между запросами он начинал
+      // отвечать 429 и требовать паузы до шести минут на картинку.
+      const response=await polite(item.thumb,{gap:1000});
       if(!response.ok){skipped++;continue;}
       const buffer=Buffer.from(await response.arrayBuffer());
       if(buffer.length<8000){skipped++;continue;}
       const name=`${String(++number).padStart(3,'0')}.jpg`;
       if(!await degrade(buffer,path.join(OUT,name))){number--;skipped++;continue;}
       fresh.push({file:name,...item});
+      save([...kept,...fresh]);
     }catch{skipped++;}
   }
   const done=kept.length+fresh.length;
@@ -195,17 +215,8 @@ for(let round=0;round<QUOTA&&kept.length+fresh.length<WANTED;round++){
 }
 
 const all=[...kept,...fresh];
-// Порядок в index.json — вперемешку по темам. Потребители всё равно тасуют, но если
-// кто-то возьмёт первые двадцать четыре подряд, пусть это будут двадцать четыре разные темы.
-const byTopic=new Map();
-for(const item of all)byTopic.set(item.topic,[...(byTopic.get(item.topic)||[]),item]);
-const mixed=[];
-for(let round=0;mixed.length<all.length;round++)
-  for(const items of byTopic.values())if(items[round])mixed.push(items[round]);
-
-fs.writeFileSync(path.join(OUT,'index.json'),JSON.stringify(mixed.map(item=>item.file),null,1),'utf8');
-fs.writeFileSync(creditsFile,JSON.stringify(mixed,null,1),'utf8');
+const topics=save(all);
 const bytes=all.reduce((sum,item)=>sum+fs.statSync(path.join(OUT,item.file)).size,0);
-console.log(`\nВ наборе ${all.length} фонов из ${byTopic.size} тем (${(bytes/1048576).toFixed(1)} МБ).`);
+console.log(`\nВ наборе ${all.length} фонов из ${topics} тем (${(bytes/1048576).toFixed(1)} МБ).`);
 console.log(`Добавлено ${fresh.length}, пропущено ${skipped}.`);
 console.log('Источник — Викисклад, лицензии и авторы в dist/media/backdrops/CREDITS.json.');
