@@ -42,6 +42,18 @@ export function normalizeLanguage(value) {
 // Словарь может быть просто картой русских ударений (как раньше) либо парой языков.
 const asLexicon=source=>source instanceof Map?{ru:source,en:null}:(source||{ru:new Map(),en:null});
 
+// В английской строке почти все слова односложные, и ритм держат именно они:
+// WORDS are FLOW-ing OUT like END-less RAIN. Нейтральными они оставляли судье
+// 29% позиций на 232 английских песнях — под такой шаблон подходило что угодно.
+// Служебное слово безударно, знаменательное ударно; CMUdict и сам помечает «a»,
+// «the», «and» нулём, но «are», «of», «my», «like» у него ударные.
+// Частицы фразовых глаголов (out, up, off) и вопросительные слова ударны — их тут нет.
+const EN_WEAK=new Set(('a an the and or but nor as than that if of to in on at by for with from into like '+
+  'is am are was were be been has have had do does did can could will would shall should may might must '+
+  "i me my you your he him his she her it its we us our they them their there "+
+  "i'm i'll i've i'd you're you'll you've you'd he's she's it's we're we'll we've they're they'll they've "+
+  "there's that's").split(' '));
+
 export function analyzeEnglishWord(word,phonemes) {
   const key=word.toLowerCase().replace(/[^a-z']/g,'');
   const entry=key&&phonemes?.get(key);
@@ -55,8 +67,8 @@ export function analyzeEnglishWord(word,phonemes) {
   const nuclei=parts.filter(part=>/\d$/.test(part));
   const count=nuclei.length||1;
   const stresses=nuclei.map(part=>{
-    if(count===1)return .35;
     const mark=part.slice(-1);
+    if(count===1)return EN_WEAK.has(key)||mark==='0'?0:1;
     return mark==='1'?1:mark==='2'?.5:0;
   });
   const vowels=nuclei.map(part=>CMU_HELD[part.slice(0,-1)]||'');
@@ -389,15 +401,18 @@ export function buildCorpus(text,dictionary,{lengths,mode,language:forcedLanguag
 // Song side: syllable slots, stress template, repeated lines folded into groups.
 // ---------------------------------------------------------------------------
 export function analyzeSong(song,dictionary) {
-  const language=song.language||detectLanguage(song.lines.map(line=>line.original).join(' '));
+  // sung — строка без распевов («реееее» → «ре»): иначе протяжная гласная считается
+  // лишними слогами и ударения съезжают. У старых разборов его нет.
+  const said=line=>line.sung??line.original;
+  const language=song.language||detectLanguage(song.lines.map(said).join(' '));
   const templates=song.lines.map(line=>{
-    const tokens=tokenize(line.original,dictionary,language);
+    const tokens=tokenize(said(line),dictionary,language);
     const stresses=tokens.flatMap(t=>t.stresses);
     const slots=line.notes.length;
     while(stresses.length<slots)stresses.push(.5);            // markup noise stays neutral instead of fatal
     return {stresses:stresses.slice(0,slots),slots,rhymes:tokens.at(-1)?.rhymes||[],
       unknownWords:tokens.filter(t=>t.unknown).map(t=>t.word),
-      key:normalize(line.original).replace(/\s+/g,' ').trim()};
+      key:normalize(said(line)).replace(/\s+/g,' ').trim()};
   });
   const groups=[],index=new Map();
   templates.forEach((template,i)=>{

@@ -66,33 +66,117 @@ function normaliseSpacing(players) {
       }
 }
 
+// Распев. Разметка тянет одну гласную тремя способами: знаком («бо-|о-|ой»,
+// «ни|~и|~ит»), повтором буквы внутри ноты («реееее») или нотами-продолжениями
+// из той же гласной («за|реее|еее|еее», «Ууууу|ууу»). Всё это один слог: если
+// считать каждую букву слогом, движок ставит на одну протяжную «е» скороговорку
+// из одиннадцати слогов. Одиночный повтор без знака почти всегда настоящий слог
+// («Рос|си|и», «е|е» — её, «хо|ро|ше|е»), его не трогаем. Замер по 418 чартам:
+// ~9 000 нот «~», 358 продолжений той же гласной, 32 ноты с тройным повтором.
+const RU_VOWEL='аеёиоуыэюя';
+const HELD_RUN=new RegExp(`([${RU_VOWEL}])\\1{2,}`,'gi');
+const collapseRuns=text=>text.replace(HELD_RUN,'$1');
+const partsOf=note=>note.parts||[{beat:note.beat,length:note.length,pitch:note.pitch,golden:note.golden}];
+const extend=(head,note,sung)=>({...head,text:head.text+note.text,sung,
+  length:note.beat+note.length-head.beat,golden:head.golden||note.golden,parts:[...partsOf(head),...partsOf(note)]});
+const sungOf=note=>note.sung??collapseRuns(note.text.replace(/~/g,''));
+
+// «~» и «-» без гласной продолжают предыдущий слог (распев или хвост «-м»),
+// а не приклеиваются к следующему: иначе следующий слог начинается раньше времени.
+function attachTails(notes) {
+  const out=[];
+  for(const note of notes) {
+    const head=out.at(-1);
+    if(head&&!VOWEL.test(note.text)&&/^[~\-]/.test(note.text)){
+      out[out.length-1]=extend(head,note,sungOf(head)+note.text.replace(/^[~\-]+/,'').replace(/~/g,''));
+      continue;
+    }
+    out.push(note);
+  }
+  return out;
+}
+
+function foldMelisma(slots) {
+  const out=[];
+  for(let i=0;i<slots.length;i++) {
+    let head=slots[i];
+    const end=/([аеёиоуыэюя])\1*$/.exec(head.text.toLowerCase().replace(/[~\-\s]+$/,''));
+    if(!end){out.push(head);continue;}
+    const vowel=end[1],chain=[],rests=[];
+    let total=end[0].length;
+    for(let j=i+1;j<slots.length;j++) {
+      const text=slots[j].text;
+      if(/^\s/.test(text))break;
+      const match=new RegExp(`^(${vowel}+)([^${RU_VOWEL}]*)$`).exec(text.toLowerCase().replace(/^[~\-]+/,''));
+      if(!match)break;
+      chain.push(slots[j]);rests.push(match[2]);total+=match[1].length;
+      if(/[а-яё]/.test(match[2]))break;          // согласная закрыла слог: «лю|бо|о|овь»
+    }
+    let take=chain.length;
+    if(total<3){                                  // одиночный повтор — только со знаком
+      take=0;
+      for(const [k,note] of chain.entries()){
+        const before=k?chain[k-1].text:head.text;
+        if(!/[~\-]\s*$/.test(before)&&!/^[~\-]/.test(note.text))break;
+        take++;
+      }
+    }
+    if(!take){out.push(head);continue;}
+    let sung=sungOf(head).replace(/[~\-]+(\s*)$/,'$1');
+    for(let k=0;k<take;k++){
+      const rest=rests[k].replace(/[~\-]/g,'');
+      // Хвост слога переносит свою часть пробела: «ре |еее» на границе слова.
+      sung+=rest;
+      head=extend(head,chain[k],sung);
+    }
+    out.push(head);
+    i+=take;
+  }
+  return out;
+}
+
+// Слог — одна гласная; повтор гласной внутри ноты («реееее») — всё ещё один слог.
+function splitNote(note) {
+  const lead=note.text.match(/^\s*/)[0],body=note.text.slice(lead.length);
+  const masked=body.replace(HELD_RUN,(run,first)=>first+'ъ'.repeat(run.length-1));
+  const parts=[];let from=0;
+  for(const part of splitSyllables(masked)){parts.push(body.slice(from,from+part.length));from+=part.length;}
+  return {lead,parts};
+}
+
 // One note may carry several vowels; karaoke needs one slot per syllable.
 function toSlots(notes,language='ru') {
   const merged=[];let prefix=null;
-  for(const note of notes) {
+  for(const note of attachTails(notes)) {
     if(!VOWEL.test(note.text)){
       prefix=prefix?{...prefix,text:prefix.text+note.text,length:note.beat+note.length-prefix.beat}:{...note};
       continue;
     }
-    merged.push(prefix?{...note,beat:prefix.beat,length:note.beat+note.length-prefix.beat,text:prefix.text+note.text}:{...note});
+    merged.push(prefix?{...note,beat:prefix.beat,length:note.beat+note.length-prefix.beat,text:prefix.text+note.text,
+      sung:note.sung===undefined?undefined:prefix.text+note.sung}:{...note});
     prefix=null;
   }
-  if(prefix&&merged.length){const last=merged.at(-1);last.text+=prefix.text;last.length=Math.max(last.length,prefix.beat+prefix.length-last.beat);}
+  if(prefix&&merged.length){const last=merged.at(-1);last.text+=prefix.text;if(last.sung!==undefined)last.sung+=prefix.text;last.length=Math.max(last.length,prefix.beat+prefix.length-last.beat);}
   const slots=[];
   for(const note of merged) {
-    const count=language==='ru'?vowels(note.text):1;
+    const count=language==='ru'?vowels(collapseRuns(note.text)):1;
     if(count<2){slots.push(note);continue;}
-    const lead=note.text.match(/^\s*/)[0],body=note.text.slice(lead.length);
-    const parts=splitSyllables(body),weights=parts.map(p=>Math.max(1,p.length)),total=weights.reduce((a,b)=>a+b,0);
+    const {lead,parts}=splitNote(note),weights=parts.map(p=>Math.max(1,p.length)),total=weights.reduce((a,b)=>a+b,0);
     let used=0;
     parts.forEach((part,i)=>{
       const span=i===parts.length-1?note.length-used:Math.max(1,Math.round(note.length*weights[i]/total));
-      slots.push({...note,beat:note.beat+used,length:Math.max(1,span),text:(i?'':lead)+part});
+      const {parts:_,sung:__,...plain}=note;
+      slots.push({...plain,beat:note.beat+used,length:Math.max(1,span),text:(i?'':lead)+part});
       used+=span;
     });
   }
-  return slots;
+  return language==='ru'?foldMelisma(slots):slots;
 }
+
+// original — как в разметке, для подписи; sung — что звучит, без распевов:
+// по нему движок считает ударения и узнаёт повторы припева.
+const joinText=parts=>parts.join('').replace(/\s+/g,' ').trim();
+const texts=notes=>({original:joinText(notes.map(n=>n.text)),sung:joinText(notes.map(n=>n.sung??n.text))});
 
 export function parseUltraStar(text,{voice='merge'}={}) {
   const {headers,players,tempos}=readRows(text);
@@ -115,11 +199,14 @@ export function parseUltraStar(text,{voice='merge'}={}) {
     for(const block of blocks) {
       const slots=toSlots(block,language);
       if(!slots.length)continue;
-      const notes=slots.map(slot=>({text:slot.text,beat:slot.beat,length:slot.length,pitch:slot.pitch,
-        golden:Boolean(slot.golden),free:Boolean(slot.free),start:at(slot.beat),end:at(slot.beat+slot.length)}));
+      const notes=slots.map(slot=>({text:slot.text,sung:sungOf(slot),beat:slot.beat,length:slot.length,pitch:slot.pitch,
+        golden:Boolean(slot.golden),free:Boolean(slot.free),start:at(slot.beat),end:at(slot.beat+slot.length),
+        // распев держит мелодию внутри слога: оценка пения сверяет каждый его кусок
+        ...(slot.parts?{parts:slot.parts.map(part=>({pitch:part.pitch,golden:Boolean(part.golden),
+          start:at(part.beat),end:at(part.beat+part.length)}))}:{})}));
       notes.sort((a,b)=>a.start-b.start||a.end-b.end);
       for(let i=1;i<notes.length;i++)if(notes[i].start<notes[i-1].end)notes[i-1].end=notes[i].start; // clip overlaps rather than fail
-      lines.push({voice:id,notes,original:notes.map(n=>n.text).join('').replace(/\s+/g,' ').trim(),start:notes[0].start,end:notes.at(-1).end});
+      lines.push({voice:id,notes,start:notes[0].start,end:notes.at(-1).end,...texts(notes)});
     }
   }
   if(!lines.length)throw Error('В файле нет вокальных строк с гласными.');
@@ -130,7 +217,7 @@ export function parseUltraStar(text,{voice='merge'}={}) {
     if(previous&&line.start<previous.end-1e-6&&Math.min(line.end,previous.end)-line.start>(line.end-line.start)*.5)continue;
     if(previous&&line.start<previous.end)line.notes=line.notes.filter(n=>n.start>=previous.end-1e-6);
     if(!line.notes.length)continue;
-    line.start=line.notes[0].start;line.original=line.notes.map(n=>n.text).join('').replace(/\s+/g,' ').trim();
+    line.start=line.notes[0].start;Object.assign(line,texts(line.notes));
     if(!VOWEL.test(line.original))continue;
     kept.push(line);
   }
@@ -161,7 +248,7 @@ export function parseUltraStar(text,{voice='merge'}={}) {
   }
   const phrases=split.map(notes=>({
     notes,
-    original:notes.map(note=>note.text).join('').replace(/\s+/g,' ').trim(),
+    ...texts(notes),
     start:notes[0].start,end:notes.at(-1).end,
     voice:notes[0].voice??1,
   })).filter(line=>VOWEL.test(line.original));

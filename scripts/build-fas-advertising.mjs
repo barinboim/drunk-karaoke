@@ -10,7 +10,11 @@ const OUT=path.join(ROOT,'dist/corpora/fas-advertising.txt');
 const csv=parse(fs.readFileSync(SOURCE,'utf8'),{delimiter:';',bom:true,relax_column_count:true,skip_empty_lines:true,relax_quotes:true});
 const rows=csv.slice(1);
 const dictionary=JSON.parse(fs.readFileSync(path.join(ROOT,'dist/data/dictionary.json'),'utf8'));
-const accents=new Set(fs.readFileSync(path.join(ROOT,'dist/data/accents.txt'),'utf8').split(/\r?\n/).map(x=>x.split('#')[0].trim().toLowerCase().replace(/́/g,'')));
+// Ключи словаря без «ё»: «неё» из accents.txt должно совпасть с «нее» в тексте.
+const accents=new Set(fs.readFileSync(path.join(ROOT,'dist/data/accents.txt'),'utf8').split(/\r?\n/).map(x=>x.split('#')[0].trim().toLowerCase().replace(/́/g,'').replace(/ё/g,'е')));
+// DUMP_UNKNOWN=файл.json — выгрузить фразы, отсеянные только из-за незнакомых ударений,
+// для scripts/stress-unknown.py. Фразы с латиницей не выгружаются: их транслит не слова.
+const dumpUnknown=process.env.DUMP_UNKNOWN,rejected=[];
 const ones=['ноль','один','два','три','четыре','пять','шесть','семь','восемь','девять'];
 const teens=['десять','одиннадцать','двенадцать','тринадцать','четырнадцать','пятнадцать','шестнадцать','семнадцать','восемнадцать','девятнадцать'];
 const tens=['','','двадцать','тридцать','сорок','пятьдесят','шестьдесят','семьдесят','восемьдесят','девяносто'];
@@ -53,8 +57,8 @@ for(const row of rows){let source=String(row[9]||'').trim();if(!source){empty++;
   const text=clean(phrase);if(!text||!/[А-Яа-яЁё]/.test(text)||startsIncomplete.test(text)||endsIncomplete.test(text))continue;
   const count=syllables(text);if(count<1||count>32){filteredLength++;continue;}
   const words=text.toLowerCase().replace(/́/g,'').match(/[а-яё]+/g)||[];
-  const unknown=words.filter(w=>syllables(w)>1&&!Object.hasOwn(dictionary,w)&&!accents.has(w));
-  if(unknown.length){unknownCount++;continue;}
+  const unknown=words.filter(w=>{const key=w.replace(/ё/g,'е');return syllables(w)>1&&!Object.hasOwn(dictionary,key)&&!accents.has(key);});
+  if(unknown.length){unknownCount++;if(dumpUnknown&&!/[A-Za-z]/.test(phrase))rejected.push(text);continue;}
   const key=normalized(text);if(seen.has(key))continue;seen.add(key);
   candidates.push({text,syllables:count,section:sectionFor(row[10]),sourceLink:String(row[3]||'')});
  }
@@ -77,3 +81,4 @@ for(const [section,lines] of buckets){out.push(`## ${section}`,...lines,'');}
 fs.mkdirSync(path.dirname(OUT),{recursive:true});fs.writeFileSync(OUT,out.join('\n'),'utf8');
 const sorted=selected.map(x=>x.syllables).sort((a,b)=>a-b);const coreCount=selected.filter(x=>x.syllables>=8&&x.syllables<=16).length;
 console.log(JSON.stringify({sourceRows:rows.length,eligibleBeforeSampling:candidates.length,accepted:selected.length,median:sorted[sorted.length>>1]||0,corePercent:selected.length?Math.round(coreCount*100/selected.length):0,overLength:filteredLength,rowsWithUnknownStress:unknownCount,empty,sections:buckets.size,examples:selected.slice(0,8).map(x=>x.text)},null,2));
+if(dumpUnknown)fs.writeFileSync(dumpUnknown,JSON.stringify([...new Set(rejected)]));

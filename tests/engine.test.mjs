@@ -244,6 +244,33 @@ test('UltraStar: quarter beats, merged consonants, split multi-vowel notes, duet
   assert.throws(()=>parseUltraStar('#GAP:0\n: 0 4 0 Раз\nE'),/BPM/);
 });
 
+test('UltraStar: a melisma is one syllable, a lone repeated vowel is a real one', () => {
+  const line=rows=>parseUltraStar(`#BPM:120\n#GAP:0\n${rows.join('\n')}\n- 99\nE`).lines[0];
+  // «На заре» из «На заре»: тройной повтор и ноты-продолжения — один протяжный слог
+  const dawn=line([': 0 4 0 На',': 4 4 0  за',': 8 20 0 реее',': 28 10 2 еее',': 38 10 0 еее']);
+  assert.equal(dawn.notes.length,3);
+  assert.equal(dawn.original,'На зареееееееее','подпись остаётся как в разметке');
+  assert.equal(dawn.sung,'На заре','движок видит слово, а не протяжную гласную');
+  assert.equal(dawn.notes[2].end,48*.125,'распев держит всю длину: до конца последней ноты, 48-й четверти');
+  assert.deepEqual(dawn.notes[2].parts.map(part=>part.pitch),[0,2,0],'мелодия внутри распева сохранена для оценки');
+  // со знаком хватает и одного повтора; согласная закрывает слог
+  const you=line([': 0 4 0 С',': 4 4 0  то',': 8 4 0 бо-',': 12 4 1 о-',': 16 4 0 ой']);
+  assert.equal(you.notes.length,2);
+  assert.equal(you.sung,'С тобой');
+  const call=line([': 0 4 0 зо',': 4 4 0 ву',': 8 4 0 -ут']);
+  assert.equal(call.notes.length,2);
+  assert.equal(call.sung,'зовут');
+  // одиночный повтор без знака — настоящий слог: Рос-си-и, е-ё, хо-ро-ше-е
+  assert.equal(line([': 0 4 0 Рос',': 4 4 0 си',': 8 4 0 и']).notes.length,3);
+  assert.equal(line([': 0 4 0 хо',': 4 4 0 ро',': 8 4 0 ше',': 12 4 0 е']).notes.length,4);
+  // «~» без гласной тянет предыдущий слог, а не начинает следующий раньше времени
+  const tilde=line([': 0 4 0 Сон',': 4 4 2 ~',': 8 4 0  мой']);
+  assert.equal(tilde.notes.length,2);
+  assert.equal(tilde.notes[0].end,8*.125);
+  assert.equal(tilde.notes[1].start,8*.125);
+  assert.equal(tilde.sung,'Сон мой');
+});
+
 test('playhead handles intro, gaps, exact boundaries and the outro', () => {
   assert.equal(positionAt(song.lines,0).next,0);
   assert.equal(positionAt(song.lines,song.lines[0].start+.01).active,0);
@@ -272,6 +299,9 @@ test('English words come from the pronouncing dictionary, not from spelling', ()
   assert.equal(analyzeEnglishWord('beautiful',cmu).count,3);
   // главное ударение читается из словаря
   assert.deepEqual(analyzeEnglishWord('abandon',cmu).stresses,[0,1,0]);
+  // ритм английской строки держат односложные слова: WORDS are FLOW-ing OUT like END-less RAIN
+  const meter='words are flowing out like endless rain'.split(' ').flatMap(word=>analyzeEnglishWord(word,cmu).stresses);
+  assert.deepEqual(meter,[1,0,1,0,1,0,1,0,1],'служебное односложное слово безударно, знаменательное ударно');
   // деление написания восстанавливает слово целиком
   for(const word of ['abandon','beautiful','boulevard','yesterday','remember']){
     const parts=splitEnglishSyllables(word,analyzeEnglishWord(word,cmu).count);

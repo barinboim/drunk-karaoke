@@ -21,7 +21,9 @@ fs.mkdirSync(OUT, {recursive: true});
 const KNOWN_WORDS = new Set(Object.keys(JSON.parse(fs.readFileSync(`${ROOT}dist/data/dictionary.json`, 'utf8'))));
 for (const line of fs.readFileSync(`${ROOT}dist/data/accents.txt`, 'utf8').split(/\r?\n/)) {
   const word = line.split('#')[0].trim().toLowerCase().replace(/́/g, '');
-  if (/^[а-яё]+$/.test(word)) KNOWN_WORDS.add(word);
+  // Like the engine's normalize(): dictionary keys carry no «ё», and «неё» from
+  // accents.txt must also match «нее» as sources usually spell it.
+  if (/^[а-яё]+$/.test(word)) KNOWN_WORDS.add(word.replace(/ё/g, 'е'));
 }
 
 const VOWELS = /[аеёиоуыэюя]/gi;
@@ -171,7 +173,7 @@ function dedupe(rows) {
 
 function hasKnownWords(text) {
   const words = text.toLowerCase().replace(/́/g, '').match(/[а-яё]+/g) || [];
-  return words.length > 0 && words.every(word => KNOWN_WORDS.has(word) || syllables(word) === 1);
+  return words.length > 0 && words.every(word => KNOWN_WORDS.has(word.replace(/ё/g, 'е')) || syllables(word) === 1);
 }
 
 function sampleRows(rows, limit) {
@@ -202,8 +204,16 @@ function sampleRows(rows, limit) {
   return [...coreSample, ...mandatory, ...tailSample].slice(0, limit);
 }
 
+// DUMP_UNKNOWN=файл.json — выгрузить фразы, которые отсеял только словарь ударений,
+// для scripts/stress-unknown.py; корпус при этом не пишется.
+const DUMP_UNKNOWN = process.env.DUMP_UNKNOWN;
+
 function writeCorpus(file, name, about, sections, rows, source, limit = Infinity, extraMeta = {}) {
   if (BUILD_ONLY.size && !BUILD_ONLY.has(file)) return {file, name, source, raw: rows.length, records: null};
+  if (DUMP_UNKNOWN) {
+    fs.writeFileSync(DUMP_UNKNOWN, JSON.stringify(dedupe(rows).map(row => row.text).filter(text => !hasKnownWords(text))));
+    return {file, name, source, raw: rows.length, records: null};
+  }
   // Keep short but complete source entries too: the engine needs a small tail
   // of one-to-three-syllable records to close song lines after a long phrase.
   const good = sampleRows(dedupe(rows).filter(x => x.text.length >= 1 && hasKnownWords(x.text)), limit);
@@ -258,6 +268,9 @@ if (enabled('pills') && fs.existsSync(`${SRC}rupharm-9k.csv`)) {
   for (const record of sourceRows) {
     const indications = String(record['показания'] || '');
     for (const phrase of indications.split(/\s*;\s*|(?<=[.!?])\s+/u)) {
+      // Latin here is a species name or a Roman numeral («Staphylococcus aureus»,
+      // «II–III стадии»); transliterated it becomes «стапхйлококкус» and «иии».
+      if (/[A-Za-z]/.test(phrase)) continue;
       const text = clean(phrase).replace(/^[\s,;:.!?]+|[\s,;:.!?]+$/g, '').trim();
       if (!text) continue;
       const section = /противопоказ|не рекомендуется|нельзя|запрещено/i.test(text)
@@ -282,11 +295,68 @@ if (enabled('pills') && fs.existsSync(`${SRC}rupharm-9k.csv`)) {
 // and ingredient declaration are kept as separate source records.
 if (enabled('label') && fs.existsSync(`${SRC}openfoodfacts-ru.json`)) {
   const sections = ['Молочные продукты','Сладости','Напитки','Консервы и соусы','Колбасы и готовые блюда','Крупы и выпечка','Детское питание','Специальные продукты','Другое'];
+  const CATEGORY_SECTIONS = [
+    [/dair|milk|cheese|yogurt|kefir|butter|cream|curd|молоч/, 0],
+    [/sweet|chocolate|candies|confection|biscuit|cookie|dessert|sugar|honey|jam|ice-cream/, 1],
+    [/beverage|drink|juice|water|tea|coffee|soda|beer|wine/, 2],
+    [/canned|sauce|condiment|mayonnaise|ketchup|pickle|preserve|spread/, 3],
+    [/meat|sausage|ham|fish|seafood|meal|dish|dumpling|pelmeni|frozen/, 4],
+    [/cereal|bread|pasta|flour|grain|rice|buckwheat|bakery|noodle|crisp|snack/, 5],
+    [/baby|infant/, 6],
+    [/diet|supplement|sport|gluten-free|vegan|plant-based/, 7],
+  ];
+  const sectionOf = product => {
+    const tags = (product.categories || []).join(' ');
+    for (const [pattern, index] of CATEGORY_SECTIONS) if (pattern.test(tags)) return sections[index];
+    return sections[8];
+  };
   const rows = [];
-  for (const product of JSON.parse(fs.readFileSync(`${SRC}openfoodfacts-ru.json`, 'utf8'))) {
-    const section = sectionBy(product.categories?.join(' ') || product.name, sections);
-    if (product.name) rows.push({text:clean(product.name), section});
-    for (const part of clauses(product.ingredients)) rows.push({text:part, section});
+  // openfoodfacts-ru-full.json: every product of the full OFF parquet export
+  // (huggingface.co/datasets/openfoodfacts/product-database) that has a
+  // Russian name or Russian ingredient declaration; same record shape. duckdb
+  // reads only the needed columns over the network:
+  //   COPY (SELECT code, list_filter(product_name, x -> x.lang = 'ru')[1].text AS name,
+  //     list_filter(ingredients_text, x -> x.lang = 'ru')[1].text AS ingredients,
+  //     categories_tags AS categories
+  //   FROM 'hf://datasets/openfoodfacts/product-database/food.parquet'
+  //   WHERE len(list_filter(ingredients_text, x -> x.lang = 'ru' AND length(x.text) > 0)) > 0
+  //      OR len(list_filter(product_name, x -> x.lang = 'ru' AND length(x.text) > 0)) > 0)
+  //   TO 'openfoodfacts-ru-full.json' (FORMAT json, ARRAY true);
+  const products = ['openfoodfacts-ru.json', 'openfoodfacts-ru-full.json']
+    .filter(file => fs.existsSync(`${SRC}${file}`))
+    .flatMap(file => JSON.parse(fs.readFileSync(`${SRC}${file}`, 'utf8')));
+  // A declaration is a list: «наполнитель Черника (сахар, вода), соль». Split
+  // only at top-level commas so every item keeps its own parentheses; commas
+  // inside them are the item's own sub-list. Decimals («1,0%», «0,5 плода») and
+  // Latin («B3», brands) have no honest spoken form here, so such items are
+  // dropped whole rather than read as «один,ноль» or «бтри».
+  const items = text => {
+    const out = [];
+    let depth = 0, from = 0;
+    const source = decodeEntities(String(text || '')).replace(/_/g, '');
+    for (let i = 0; i <= source.length; i++) {
+      const ch = source[i];
+      if (ch === '(' || ch === '[') depth++;
+      else if ((ch === ')' || ch === ']') && depth) depth--;
+      if (i === source.length || (!depth && /[,;:.]/.test(ch) && !/\d/.test(source[i + 1] || ''))) {
+        out.push(source.slice(from, i));
+        from = i + 1;
+      }
+    }
+    return out;
+  };
+  const speakable = raw => /[А-Яа-яЁё]/.test(raw) && !/[A-Za-z]|\d[,.]\d/.test(raw);
+  const balanced = t => (t.match(/\(/g) || []).length === (t.match(/\)/g) || []).length;
+  const push = (raw, section) => {
+    if (!speakable(raw)) return;
+    const text = clean(raw).replace(/^[\s\-–—:;,.!?…]+|[\s\-–—:;,.!?…]+$/g, '').trim();
+    const n = syllables(text);
+    if (n >= 1 && n <= 32 && balanced(text)) rows.push({text, section});
+  };
+  for (const product of products) {
+    const section = sectionOf(product);
+    if (product.name) push(product.name, section);
+    for (const raw of items(product.ingredients)) push(raw, section);
   }
   if (fs.existsSync(`${SRC}label-base.txt`)) for (const line of fs.readFileSync(`${SRC}label-base.txt`, 'utf8').split(/\r?\n/)) {
     if (!line || line.startsWith('-') || line.startsWith('#') || line.includes(': ') || line.startsWith('name') || line.startsWith('about') || line.startsWith('mode')) continue;
@@ -439,7 +509,9 @@ if (enabled('drugs')) {
   for (const line of fs.readFileSync(`${SRC}rudrec.json`, 'utf8').split(/\r?\n/)) {
     if (!line.trim()) continue;
     let item; try { item = JSON.parse(line.replace(/\bNaN\b/g, 'null')); } catch { continue; }
-    for (const part of clauses(item.text || '')) rows.push({text:part, section:sectionBy(item.file_name, sections)});
+    // Latin (drug brands) spoils its clause: transliterated it is not a word.
+    const text = String(item.text || '').replace(/[A-Za-z][\w-]*/g, ' ЪКОДОКЪ ');
+    for (const part of clauses(text)) if (!/ЪКОДОКЪ/.test(part)) rows.push({text:part, section:sectionBy(item.file_name, sections)});
   }
   manifests.push(writeCorpus('drugs', 'Отзывы на лекарства', 'Реальные пользовательские рассказы о лечении и побочных реакциях', sections, rows, 'https://github.com/cimm-kzn/RuDReC', 21000));
 }
@@ -457,16 +529,61 @@ if (enabled('headlines') && fs.existsSync(`${SRC}lenta.csv.gz`)) {
   manifests.push(writeCorpus('headlines', 'Заголовки новостей', 'Заголовки реальных новостей Lenta.ru', sections, rows, 'https://github.com/yutkin/Lenta.Ru-News-Dataset', 3000));
 }
 
-// 9. Russian Stack Overflow questions through the official public API.
-if (enabled('stackoverflow')) {
-  const items = JSON.parse(fs.readFileSync(`${SRC}stackoverflow.json`, 'utf8'));
+// 9. Russian Stack Overflow questions: the official API snapshot plus the full
+// ru.stackoverflow dump (IlyaGusev/ru_stackoverflow, CC BY-SA). Only question
+// titles and bodies are used, never answers or comments.
+// Without the dump the API snapshot alone yields ~3k lines; refuse to overwrite
+// the full corpus with that.
+if (enabled('stackoverflow') && !fs.existsSync(`${SRC}ru_stackoverflow.jsonl.zst`)) {
+  console.warn('Stack Overflow пропущен: нет .corpus-source/ru_stackoverflow.jsonl.zst (https://huggingface.co/datasets/IlyaGusev/ru_stackoverflow)');
+} else if (enabled('stackoverflow')) {
   const sections = ['Питон и разработка','Веб-разработка','Базы данных','Алгоритмы','Сети','Системы','Мобильная разработка','Разное'];
+  const SECTION_TAGS = [
+    [/python|django|flask|pandas|numpy|java(?!script)|c\+\+|c#|\.net|golang|^go$|kotlin|rust|php|ruby|delphi|pascal|qt|ооп/, 0],
+    [/javascript|typescript|html|css|jquery|react|vue|angular|node|веб|web|bootstrap|вёрстка|верстка|ajax|wordpress/, 1],
+    [/sql|mysql|postgres|sqlite|oracle|mongodb|redis|база-данных|базы-данных|orm|hibernate|entity-framework/, 2],
+    [/алгоритм|математик|рекурси|сортировк|графы|массив|строки|регулярн|regex/, 3],
+    [/сет|http|tcp|socket|сокет|api|rest|nginx|apache|сервер|telegram|парсинг|requests/, 4],
+    [/linux|windows|bash|docker|git|ubuntu|macos|shell|powershell|cmd|многопоточност|память/, 5],
+    [/android|ios|swift|flutter|xamarin|react-native|мобильн/, 6],
+  ];
+  const sectionOf = tags => {
+    for (const [pattern, index] of SECTION_TAGS) if (tags.some(tag => pattern.test(tag))) return sections[index];
+    return sections[7];
+  };
+  // Code is not speech: a whole <pre> block is its own non-speech sentence and
+  // inline <code> spoils the clause it sits in. The two-vowel marker is not in the
+  // dictionary, so hasKnownWords drops exactly those clauses and nothing is
+  // glued together across a removed identifier.
+  // Latin on ru.stackoverflow is nearly always an identifier or a URL, and its
+  // transliteration («нулл», «лине») is noise, so it spoils the clause too.
+  const withoutCode = html => decodeEntities(String(html || '')
+    .replace(/<pre[\s\S]*?<\/pre>/gi, '. ЪКОДОКЪ. ')
+    .replace(/<code[\s\S]*?<\/code>/gi, ' ЪКОДОКЪ ')
+    .replace(/<\/?(p|li|ul|ol|h\d|blockquote|br)\b[^>]*>/gi, '. ')
+    .replace(/<[^>]*>/g, ' '))
+    .replace(/https?:\/\/\S+|www\.\S+|[A-Za-z][\w.#+\/-]*/g, ' ЪКОДОКЪ ');
+  const balanced = text => (text.match(/\(/g) || []).length === (text.match(/\)/g) || []).length;
   const rows = [];
-  for (const item of items) {
-    const value = `${item.title || ''}. ${item.body || ''}`;
-    for (const part of clauses(value)) rows.push({text:part, section:sectionBy((item.tags || []).join(' '), sections)});
+  const pushQuestion = (title, html, tags) => {
+    const section = sectionOf(tags);
+    for (const part of clauses(`${withoutCode(title)}. ${withoutCode(html)}`)) {
+      const n = syllables(part);
+      if (n <= 24 && balanced(part) && hasKnownWords(part)) rows.push({text:part, section});
+    }
+  };
+  for (const item of JSON.parse(fs.readFileSync(`${SRC}stackoverflow.json`, 'utf8'))) pushQuestion(item.title, item.body, item.tags || []);
+  const DUMP = `${SRC}ru_stackoverflow.jsonl.zst`;
+  if (fs.existsSync(DUMP)) {
+    const {spawn} = await import('node:child_process');
+    const readline = await import('node:readline');
+    const input = spawn('zstd', ['-dc', DUMP], {stdio:['ignore','pipe','inherit']});
+    for await (const line of readline.createInterface({input:input.stdout, crlfDelay:Infinity})) {
+      let item; try { item = JSON.parse(line); } catch { continue; }
+      pushQuestion(item.title, item.text_html, item.tags || []);
+    }
   }
-  manifests.push(writeCorpus('stackoverflow', 'Вопросы Stack Overflow', 'Реальные вопросы русскоязычного Stack Overflow', sections, rows, 'https://api.stackexchange.com/2.3/questions?site=ru.stackoverflow', 21000));
+  manifests.push(writeCorpus('stackoverflow', 'Вопросы Stack Overflow', 'Реальные вопросы русскоязычного Stack Overflow', sections, rows, 'https://huggingface.co/datasets/IlyaGusev/ru_stackoverflow (CC BY-SA 2.5) + https://api.stackexchange.com/2.3/questions?site=ru.stackoverflow', 21000));
 }
 
 // 10. RIA news sample: headlines plus first complete sentences from the same
@@ -483,5 +600,5 @@ if (enabled('strange-news')) {
   manifests.push(writeCorpus('strange-news', 'Странные новости', 'Заголовки и первые фразы реальных новостей РИА Новости', sections, rows, 'https://github.com/RossiyaSegodnya/ria_news_dataset', 3000));
 }
 
-fs.writeFileSync(`${SRC}BUILD-MANIFEST.json`, JSON.stringify(manifests, null, 2));
+if (!DUMP_UNKNOWN) fs.writeFileSync(`${SRC}BUILD-MANIFEST.json`, JSON.stringify(manifests, null, 2));
 for (const m of manifests) console.log(`${m.name}: ${m.records} записей (из ${m.raw})`);

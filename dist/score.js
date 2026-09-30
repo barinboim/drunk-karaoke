@@ -47,7 +47,9 @@ export function measureTake(take,lines){
         frames++;
         if(hz[f]>0&&clarity[f]>=CLEAR&&rms[f]>=LOUD){
           voiced++;
-          sum+=credit(semitoneGap(hzToMidi(hz[f]),note.pitch+60));
+          // распев — один слог, но мелодия внутри него своя: сверяем с тем куском, что звучит сейчас
+          const pitch=note.parts?.find(part=>when<part.end)?.pitch??note.pitch;
+          sum+=credit(semitoneGap(hzToMidi(hz[f]),pitch+60));
         }
       }
       if(!frames)continue;                          // нота вне записанного отрезка
